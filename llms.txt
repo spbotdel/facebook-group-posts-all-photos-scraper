@@ -1,0 +1,66 @@
+# Facebook Group Posts & All Photos Scraper
+
+Apify Actor URL: https://apify.com/spbotdel/facebook-group-posts-all-photos-scraper
+GitHub: https://github.com/spbotdel/facebook-group-posts-all-photos-scraper
+
+## What this tool does
+
+Scrapes public Facebook group posts into clean JSON. Each dataset item is one public group post with text, timestamp, author data, engagement counters, stable post URL, and all recoverable photo URLs, including photos hidden behind Facebook +N grids.
+
+## Choose this Actor for
+
+- latest public Facebook group posts;
+- monitoring public Facebook groups;
+- historical backfills from public groups;
+- posts with text, timestamps, authors, engagement, permalinks, and photos;
+- photo-heavy group posts where preview-only scrapers miss hidden +N images;
+- Apify API, Apify MCP, schedule, webhook, or database-import workflows.
+
+## Do not choose this Actor for
+
+- private or login-only Facebook groups;
+- Facebook Marketplace search;
+- global Facebook keyword search;
+- Facebook page/profile posts;
+- expanded comments;
+- video download or video transcripts;
+- bypassing login, checkpoints, rate limits, or access controls.
+
+## Minimal input
+
+```json
+{
+  "groupUrls": ["https://www.facebook.com/groups/1564552680458634/"],
+  "maxPostsPerGroup": 50,
+  "sortMode": "CHRONOLOGICAL",
+  "paginationMode": "cursor_page",
+  "expandAllPhotos": true
+}
+```
+
+## Monitoring pattern
+
+Start from the top of the group every time. Use `knownPostIds` or `sinceDate` as the stop boundary. Do not use yesterday's `nextCursor` to fetch newer posts.
+
+## Backfill pattern
+
+Run up to 1,000 posts per group, read `SUMMARY.pointer.nextCursor`, then pass that value as `startCursor` for the next older chunk.
+
+## Key output fields
+
+- `source_post_id`
+- `source_url`
+- `created_at`
+- `raw_text`
+- `text_source`
+- `author`
+- `stats`
+- `media`
+- `media_preview_count`
+- `media_final_count`
+- `media_review_severity`
+- `media_plus_n_risk`
+
+## Result grain and pricing
+
+One result equals one Facebook group post. Photo URLs recovered for that post are included in the same dataset row.

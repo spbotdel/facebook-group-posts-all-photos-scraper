@@ -8,7 +8,7 @@ Scrape public Facebook group posts as clean, agent-ready JSON: post text, timest
 
 Use this Actor when a preview-only Facebook group scraper is not enough. Each dataset item is one public Facebook group post, and recovered photo URLs are included in that same result.
 
-**Links:** [Run on Apify](https://apify.com/spbotdel/facebook-group-posts-all-photos-scraper) · [Agent guide](docs/AGENT_GUIDE.md) · [MCP/API usage](docs/MCP_USAGE.md) · [Output schema](docs/OUTPUT_SCHEMA.md) · [Backfill guide](docs/CURSOR_BACKFILL.md)
+**Links:** [Run on Apify](https://apify.com/spbotdel/facebook-group-posts-all-photos-scraper) · [Source on GitHub](https://github.com/spbotdel/facebook-group-posts-all-photos-scraper) · [Agent guide](https://github.com/spbotdel/facebook-group-posts-all-photos-scraper/blob/main/docs/AGENT_GUIDE.md) · [LLM card](https://github.com/spbotdel/facebook-group-posts-all-photos-scraper/blob/main/llms.txt) · [MCP/API usage](https://github.com/spbotdel/facebook-group-posts-all-photos-scraper/blob/main/docs/MCP_USAGE.md) · [Output schema](https://github.com/spbotdel/facebook-group-posts-all-photos-scraper/blob/main/docs/OUTPUT_SCHEMA.md) · [Backfill guide](https://github.com/spbotdel/facebook-group-posts-all-photos-scraper/blob/main/docs/CURSOR_BACKFILL.md)
 
 ## ⚡ At a glance
 
@@ -50,6 +50,16 @@ This Actor focuses on post completeness:
 | Pricing model | Can be unclear whether media costs extra | Charged per post result; photo URLs are included |
 
 In short: if the post has a photo grid, this Actor tries to bring the whole table, not just the first spoonful.
+
+## ✅ Trust signals
+
+| Signal | What it means |
+| --- | --- |
+| Open source | Source code is available on [GitHub](https://github.com/spbotdel/facebook-group-posts-all-photos-scraper). |
+| CI tested | Syntax checks and parser tests run on GitHub Actions. |
+| Clear output schema | One dataset row equals one Facebook group post. |
+| Agent-readable docs | See [`llms.txt`](https://github.com/spbotdel/facebook-group-posts-all-photos-scraper/blob/main/llms.txt) and the [Agent guide](https://github.com/spbotdel/facebook-group-posts-all-photos-scraper/blob/main/docs/AGENT_GUIDE.md). |
+| Public boundaries | Public groups only; no login-only/private group access. |
 
 ## 🤖 Built for AI agents and MCP workflows
 
@@ -362,6 +372,21 @@ These task pages are useful starting points for common jobs:
 | [Daily Facebook group monitoring](https://apify.com/spbotdel/facebook-group-posts-all-photos-scraper/examples/daily-facebook-group-monitoring) | Scheduled monitoring with a stop boundary. |
 | [Historical Facebook group backfill](https://apify.com/spbotdel/facebook-group-posts-all-photos-scraper/examples/historical-facebook-group-backfill) | Older posts with cursor continuation. |
 | [Monitor public Facebook groups](https://apify.com/spbotdel/facebook-group-posts-all-photos-scraper/examples/monitor-public-facebook-groups) | Multi-group monitoring. |
+
+For task-page copy, field selection, and SEO-intent planning, see the [Task page guide](https://github.com/spbotdel/facebook-group-posts-all-photos-scraper/blob/main/docs/TASK_PAGE_GUIDE.md).
+
+## 📚 Documentation
+
+| Document | Use it for |
+| --- | --- |
+| [Agent guide](https://github.com/spbotdel/facebook-group-posts-all-photos-scraper/blob/main/docs/AGENT_GUIDE.md) | Quick AI-agent routing and run advice. |
+| [LLM playbook](https://github.com/spbotdel/facebook-group-posts-all-photos-scraper/blob/main/docs/LLM_AGENT_PLAYBOOK.md) | Detailed recipes for agentic runs. |
+| [MCP/API usage](https://github.com/spbotdel/facebook-group-posts-all-photos-scraper/blob/main/docs/MCP_USAGE.md) | API, MCP, and automation examples. |
+| [Output schema](https://github.com/spbotdel/facebook-group-posts-all-photos-scraper/blob/main/docs/OUTPUT_SCHEMA.md) | Field meanings and media audit fields. |
+| [Cursor backfill](https://github.com/spbotdel/facebook-group-posts-all-photos-scraper/blob/main/docs/CURSOR_BACKFILL.md) | Daily monitoring and older-post continuation. |
+| [Task page guide](https://github.com/spbotdel/facebook-group-posts-all-photos-scraper/blob/main/docs/TASK_PAGE_GUIDE.md) | Public task pages and SEO intents. |
+| [SEO intents](https://github.com/spbotdel/facebook-group-posts-all-photos-scraper/blob/main/docs/SEO_INTENTS.md) | Search/recommender intent map. |
+| [Limitations](https://github.com/spbotdel/facebook-group-posts-all-photos-scraper/blob/main/docs/LIMITATIONS.md) | Boundaries and unsupported targets. |
 
 ## 🔍 Search intents this Actor covers
 

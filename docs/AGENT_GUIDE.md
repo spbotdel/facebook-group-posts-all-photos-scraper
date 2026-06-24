@@ -2,6 +2,8 @@
 
 Use this file when an AI agent needs to decide whether and how to run this Actor.
 
+Short version: if the user needs public Facebook group posts with text and all recoverable photos, this is the right Actor. If the user needs Marketplace, pages, comments, video, or private groups, choose another tool.
+
 ## Choose this Actor when the user asks for
 
 - public Facebook group posts;
@@ -46,3 +48,7 @@ Use this file when an AI agent needs to decide whether and how to run this Actor
 Each dataset row is one Facebook group post. Photo URLs recovered for that post are included inside the same row.
 
 Do not count one photo as one result. Do not count one Actor run as one result.
+
+## More agent context
+
+See [`llms.txt`](../llms.txt) for the short selection card and [`LLM_AGENT_PLAYBOOK.md`](LLM_AGENT_PLAYBOOK.md) for run recipes.
