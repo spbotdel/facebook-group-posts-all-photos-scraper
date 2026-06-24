@@ -1,0 +1,38 @@
+{
+  "name": "facebook-group-posts-all-photos-scraper",
+  "version": "0.3.0-beta.0",
+  "description": "Apify Actor for public Facebook group posts with all recoverable photo URLs, timestamps, authors, engagement, and agent-ready JSON.",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "homepage": "https://apify.com/spbotdel/facebook-group-posts-all-photos-scraper",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spbotdel/facebook-group-posts-all-photos-scraper.git"
+  },
+  "bugs": {
+    "url": "https://github.com/spbotdel/facebook-group-posts-all-photos-scraper/issues"
+  },
+  "keywords": [
+    "apify",
+    "facebook",
+    "facebook-groups",
+    "facebook-scraper",
+    "social-media",
+    "mcp",
+    "ai-agents",
+    "web-scraping"
+  ],
+  "scripts": {
+    "start": "node src/main.js",
+    "check": "node --check src/main.js && node --check src/htmlMedia.js && node --check src/mediaQuality.js && node --check src/proxySession.js && node --check src/settings.js",
+    "test": "node --test",
+    "example:api": "node examples/run-with-apify-api.mjs"
+  },
+  "dependencies": {
+    "apify": "^3.4.5",
+    "got-scraping": "^4.1.2",
+    "html-entities": "^2.6.0",
+    "tough-cookie": "^5.1.2"
+  }
+}

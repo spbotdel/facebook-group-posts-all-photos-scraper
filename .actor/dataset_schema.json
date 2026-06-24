@@ -1,0 +1,133 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "record_type": { "type": "string" },
+      "source_platform": { "type": "string" },
+      "provider": { "type": "string" },
+      "rank": { "type": "integer" },
+      "group_id": { "type": ["string", "null"] },
+      "group_url": { "type": "string" },
+      "group_name": { "type": ["string", "null"] },
+      "source_post_id": { "type": ["string", "null"] },
+      "source_url": { "type": ["string", "null"] },
+      "created_at": { "type": ["string", "null"] },
+      "created_at_source": { "type": ["string", "null"] },
+      "raw_text": { "type": "string" },
+      "text_source": { "type": "string" },
+      "text_missing_reason": { "type": ["string", "null"] },
+      "author": {
+        "type": "object",
+        "properties": {
+          "id": { "type": ["string", "null"] },
+          "source_user_id": { "type": ["string", "null"] },
+          "name": { "type": ["string", "null"] },
+          "url": { "type": ["string", "null"] }
+        }
+      },
+      "stats": { "type": "object" },
+      "media": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "source_media_id": { "type": "string" },
+            "media_type": { "type": "string" },
+            "source_url": { "type": "string" },
+            "thumbnail_url": { "type": "string" },
+            "width": { "type": "integer" },
+            "height": { "type": "integer" },
+            "ocr_text": { "type": ["string", "null"] },
+            "source": { "type": "string" },
+            "index": { "type": "integer" }
+          }
+        }
+      },
+      "media_preview_count": { "type": "integer" },
+      "media_expanded_count": { "type": "integer" },
+      "media_final_count": { "type": "integer" },
+      "media_completeness": { "type": "string" },
+      "media_completeness_legacy": { "type": "string" },
+      "media_review_severity": { "type": "string" },
+      "media_plus_n_risk": { "type": "boolean" },
+      "media_deferred_retry": {
+        "type": ["object", "null"],
+        "properties": {
+          "attempted": { "type": "boolean" },
+          "improved": { "type": "boolean" },
+          "previous": { "type": "object" },
+          "final": { "type": "object" },
+          "requested_retries": { "type": "integer" },
+          "retry_delay_ms": { "type": "integer" },
+          "status_code": { "type": ["integer", "null"] },
+          "url": { "type": ["string", "null"] },
+          "error": { "type": ["string", "null"] }
+        }
+      },
+      "media_set_tokens": {
+        "type": "array",
+        "items": { "type": "string" }
+      },
+      "coverage_status": { "type": "string" },
+      "warnings": {
+        "type": "array",
+        "items": { "type": "string" }
+      },
+      "pagination": { "type": ["object", "null"] },
+      "raw_payload_json": { "type": ["object", "null"] },
+      "raw_comet_payload_json": { "type": ["object", "null"] }
+    },
+    "required": [
+      "record_type",
+      "source_platform",
+      "provider",
+      "rank",
+      "source_post_id",
+      "raw_text",
+      "media",
+      "media_completeness"
+    ]
+  },
+  "views": {
+    "overview": {
+      "title": "Posts",
+      "transformation": {
+        "fields": [
+          "rank",
+          "created_at",
+          "source_post_id",
+          "raw_text",
+          "text_source",
+          "text_missing_reason",
+          "author",
+          "media_preview_count",
+          "media_expanded_count",
+          "media_plus_n_risk",
+          "media_review_severity",
+          "media_completeness",
+          "media_deferred_retry",
+          "source_url"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "rank": { "label": "Rank" },
+          "created_at": { "label": "Created" },
+          "source_post_id": { "label": "Post ID" },
+          "raw_text": { "label": "Text", "format": "text" },
+          "author": { "label": "Author" },
+          "media_preview_count": { "label": "Preview photos" },
+          "media_expanded_count": { "label": "Expanded photos" },
+          "media_plus_n_risk": { "label": "+N risk" },
+          "media_review_severity": { "label": "Media review" },
+          "media_completeness": { "label": "Media status" },
+          "media_deferred_retry": { "label": "Deferred retry" },
+          "source_url": { "label": "Post URL", "format": "link" }
+        }
+      }
+    }
+  }
+}

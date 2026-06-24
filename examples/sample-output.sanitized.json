@@ -1,0 +1,56 @@
+{
+  "record_type": "post",
+  "source_platform": "facebook",
+  "provider": "dachapify_facebook_group_posts_all_photos",
+  "rank": 1,
+  "group_id": "1564552680458634",
+  "group_url": "https://www.facebook.com/groups/1564552680458634/",
+  "group_name": "Example public group",
+  "source_post_id": "1938490876848082",
+  "source_url": "https://www.facebook.com/groups/1564552680458634/permalink/1938490876848082/",
+  "created_at": "2026-06-19T10:22:11.000Z",
+  "created_at_source": "creation_time",
+  "raw_text": "Example post text...",
+  "text_source": "direct_message",
+  "text_missing_reason": null,
+  "author": {
+    "id": "100000000000000",
+    "source_user_id": "100000000000000",
+    "name": "Example Author",
+    "url": "https://www.facebook.com/profile.php?id=100000000000000"
+  },
+  "stats": {
+    "likes": 12,
+    "comments": 3,
+    "shares": 1
+  },
+  "media": [
+    {
+      "source_media_id": "photo_1",
+      "media_type": "photo",
+      "source_url": "https://scontent.example/photo.jpg",
+      "thumbnail_url": "https://scontent.example/thumb.jpg",
+      "width": 0,
+      "height": 0,
+      "ocr_text": null,
+      "source": "media_set",
+      "index": 0
+    }
+  ],
+  "media_preview_count": 5,
+  "media_expanded_count": 13,
+  "media_final_count": 13,
+  "media_completeness": "expanded",
+  "media_review_severity": "none",
+  "media_plus_n_risk": false,
+  "media_set_tokens": [
+    "pcb.1938490876848082"
+  ],
+  "coverage_status": "ok",
+  "warnings": [],
+  "pagination": {
+    "mode": "cursor_page"
+  },
+  "raw_payload_json": null,
+  "raw_comet_payload_json": null
+}

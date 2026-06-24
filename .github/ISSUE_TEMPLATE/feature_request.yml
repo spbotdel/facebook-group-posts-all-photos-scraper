@@ -1,0 +1,20 @@
+name: Feature request
+description: Suggest a new capability or integration.
+title: "[feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Use case
+      description: What are you trying to automate or collect?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: What output, input field, or integration would help?
+    validations:
+      required: true

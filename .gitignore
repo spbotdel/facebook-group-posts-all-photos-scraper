@@ -1,0 +1,26 @@
+node_modules/
+storage/
+.env
+.env.*
+!.env.example
+npm-debug.log*
+*.local
+
+# Local benchmark outputs belong in the workspace-level outputs folder.
+outputs/
+run-logs/
+
+# Internal launch notes and one-off benchmark drivers are kept out of the
+# public repository. Public docs live in docs/AGENT_GUIDE.md and friends.
+docs/APIFY_PUBLIC_TASKS.md
+docs/PRICING.md
+docs/PUBLISHING_HANDOFF.md
+docs/RELEASE_CHECKLIST.md
+docs/STORE_LISTING_DRAFT.md
+docs/TECHNICAL_NOTES.md
+docs/VALIDATION.md
+scripts/cloud-pointer-benchmark.mjs
+scripts/cloud-product-benchmark.mjs
+scripts/create-public-task-candidates.mjs
+scripts/direct-multigroup-benchmark.mjs
+scripts/update-public-task-defaults.mjs

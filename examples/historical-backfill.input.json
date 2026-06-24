@@ -1,0 +1,11 @@
+{
+  "groupUrls": [
+    "https://www.facebook.com/groups/167625939644211/"
+  ],
+  "maxPostsPerGroup": 1000,
+  "sortMode": "CHRONOLOGICAL",
+  "paginationMode": "cursor_page",
+  "startCursor": "PASTE_SUMMARY_POINTER_NEXT_CURSOR_HERE",
+  "expandAllPhotos": true,
+  "mediaExpansionConcurrency": 3
+}

@@ -1,0 +1,272 @@
+{
+  "title": "Facebook Group Posts & All Photos Scraper",
+  "description": "Scrape public Facebook group posts as clean, agent-ready JSON. Each result is one post with text, timestamp, author data, engagement, stable post URL, and all recoverable photo URLs. The Actor expands Facebook photo sets hidden behind +N grids, adds media quality flags for suspicious rows, and supports monitoring plus 1,000-post backfill chunks with cursor continuation for larger 5,000+ datasets. Public groups only; no private/login-only content, comments expansion, image downloads, or video guarantee.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "groupUrls": {
+      "title": "Facebook group URLs",
+      "type": "array",
+      "description": "Required. Public Facebook group URLs, vanity URLs, or numeric group IDs. Use group URLs only, not post URLs, Marketplace URLs, or private/login-only groups. Up to maxGroupsPerRun groups are processed inside one Actor run.",
+      "editor": "stringList",
+      "prefill": [
+        "https://www.facebook.com/groups/1564552680458634/"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "maxGroupsPerRun": {
+      "title": "Max groups per run",
+      "type": "integer",
+      "description": "Maximum number of groupUrls to process in one Actor run. Extra group URLs are skipped and listed in SUMMARY.skippedGroupUrls.",
+      "editor": "number",
+      "unit": "groups",
+      "default": 10,
+      "minimum": 1,
+      "maximum": 10
+    },
+    "maxPostsPerGroup": {
+      "title": "Max posts per group",
+      "type": "integer",
+      "description": "Maximum number of post results to return per group. For deep historical backfills, run up to 1,000 posts, store SUMMARY.pointer.nextCursor, then continue with startCursor.",
+      "editor": "number",
+      "unit": "posts",
+      "default": 30,
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "sortMode": {
+      "title": "Sort mode",
+      "type": "string",
+      "description": "Facebook group feed sort mode. New posts first is the best fit for latest-post collection and daily monitoring.",
+      "editor": "select",
+      "default": "CHRONOLOGICAL",
+      "enum": [
+        "CHRONOLOGICAL",
+        "RECENT_ACTIVITY",
+        "TOP_POSTS"
+      ],
+      "enumTitles": [
+        "New posts first",
+        "Recent activity",
+        "Top posts"
+      ]
+    },
+    "expandAllPhotos": {
+      "title": "Expand all photos",
+      "type": "boolean",
+      "description": "Recover photo URLs hidden behind Facebook +N grids when publicly available. Keep enabled for complete media rows; disable only for faster preview-only runs.",
+      "editor": "checkbox",
+      "default": true
+    },
+    "includeRawPayload": {
+      "title": "Include raw payload",
+      "type": "boolean",
+      "description": "Include the raw parsed Facebook payload in each dataset row. Useful for debugging, but makes output much larger.",
+      "editor": "checkbox",
+      "default": false
+    },
+    "sinceDate": {
+      "title": "Since date",
+      "type": "string",
+      "description": "Optional monitoring boundary. With New posts first sorting, the Actor stops when posts older than this date are reached.",
+      "editor": "datepicker",
+      "sectionCaption": "Incremental monitoring"
+    },
+    "knownPostIds": {
+      "title": "Known post IDs",
+      "type": "array",
+      "description": "Post IDs already stored by your pipeline. With New posts first sorting, the Actor stops when it reaches one of them. Best for daily monitoring.",
+      "editor": "stringList",
+      "sectionCaption": "Incremental monitoring",
+      "items": {
+        "type": "string"
+      }
+    },
+    "checkpoint": {
+      "title": "Checkpoint",
+      "type": "object",
+      "description": "Checkpoint object from a previous SUMMARY. Use it for incremental monitoring or per-group continuation when your pipeline stores run state.",
+      "editor": "json",
+      "sectionCaption": "Incremental monitoring"
+    },
+    "startCursor": {
+      "title": "Start cursor",
+      "type": "string",
+      "description": "Cursor from SUMMARY.pointer.nextCursor. Use it for older-post historical backfills only. Do not use yesterday's cursor to collect newer posts.",
+      "editor": "textarea",
+      "sectionCaption": "Incremental monitoring"
+    },
+    "startCursorsByGroup": {
+      "title": "Start cursors by group",
+      "type": "object",
+      "description": "Optional map of group URL to GraphQL cursor for older-page backfill in multi-group runs. Prefer passing the previous SUMMARY/checkpoint when available.",
+      "editor": "json",
+      "sectionCaption": "Incremental monitoring"
+    },
+    "paginationMode": {
+      "title": "Pagination mode",
+      "type": "string",
+      "description": "Ranked snapshot collects candidates and sorts locally by creation time. Cursor page preserves feed cursor order, emits a next pointer, and is recommended for monitoring or backfills.",
+      "editor": "select",
+      "default": "ranked_snapshot",
+      "enum": [
+        "ranked_snapshot",
+        "cursor_page"
+      ],
+      "enumTitles": [
+        "Ranked snapshot",
+        "Cursor page"
+      ],
+      "sectionCaption": "Advanced controls"
+    },
+    "maxCandidates": {
+      "title": "Max candidate posts",
+      "type": "integer",
+      "description": "Candidate posts collected before local sorting. Use 0 for automatic candidate budget based on Max posts per group.",
+      "editor": "number",
+      "unit": "posts",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 3000,
+      "sectionCaption": "Advanced controls"
+    },
+    "maxPages": {
+      "title": "Max GraphQL pages",
+      "type": "integer",
+      "description": "Maximum GraphQL pagination requests after the public group bootstrap. Use 0 for automatic page budget based on Max posts per group.",
+      "editor": "number",
+      "unit": "pages",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 500,
+      "sectionCaption": "Advanced controls"
+    },
+    "bootstrapRetries": {
+      "title": "Bootstrap retries",
+      "type": "integer",
+      "description": "How many fresh proxy/session bootstrap attempts to try if Facebook returns a poor or login-walled public group page.",
+      "editor": "number",
+      "default": 4,
+      "minimum": 1,
+      "maximum": 10,
+      "sectionCaption": "Advanced controls"
+    },
+    "graphqlPageRetries": {
+      "title": "GraphQL page retries",
+      "type": "integer",
+      "description": "Retry count for transient empty/small GraphQL pagination responses.",
+      "editor": "number",
+      "default": 2,
+      "minimum": 0,
+      "maximum": 5,
+      "sectionCaption": "Advanced controls"
+    },
+    "proxyCountry": {
+      "title": "Proxy country",
+      "type": "string",
+      "description": "Apify proxy country code.",
+      "editor": "textfield",
+      "default": "US",
+      "sectionCaption": "Advanced controls"
+    },
+    "mediaSetRetries": {
+      "title": "Photo-set retries",
+      "type": "integer",
+      "description": "Retry count for each Facebook media/set request.",
+      "editor": "number",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 5,
+      "sectionCaption": "Advanced controls"
+    },
+    "mediaSetRetryDelayMs": {
+      "title": "Photo-set retry delay",
+      "type": "integer",
+      "description": "Base delay for media/set retries.",
+      "editor": "number",
+      "unit": "ms",
+      "default": 800,
+      "minimum": 0,
+      "maximum": 10000,
+      "sectionCaption": "Advanced controls"
+    },
+    "mediaExpansionConcurrency": {
+      "title": "Photo expansion concurrency",
+      "type": "integer",
+      "description": "How many posts can expand Facebook media/set pages in parallel. Higher values can speed up all-photos runs but may increase transient Facebook/proxy failures.",
+      "editor": "number",
+      "default": 3,
+      "minimum": 1,
+      "maximum": 10,
+      "sectionCaption": "Advanced controls"
+    },
+    "mediaExpansionAdaptive": {
+      "title": "Adaptive photo expansion",
+      "type": "boolean",
+      "description": "When enabled, the Actor can lower high photo expansion concurrency back to the stable level if recent media/set expansion quality degrades.",
+      "editor": "checkbox",
+      "default": true,
+      "sectionCaption": "Advanced controls"
+    },
+    "mediaDeferredRetry": {
+      "title": "Deferred photo retry",
+      "type": "boolean",
+      "description": "Retry only suspicious photo-set rows after the main pass, before final dataset output. This improves +N coverage at a small extra runtime cost.",
+      "editor": "checkbox",
+      "default": true,
+      "sectionCaption": "Advanced controls"
+    },
+    "mediaDeferredRetryConcurrency": {
+      "title": "Deferred retry concurrency",
+      "type": "integer",
+      "description": "How many suspicious posts to retry in parallel during the deferred photo retry pass.",
+      "editor": "number",
+      "default": 2,
+      "minimum": 1,
+      "maximum": 5,
+      "sectionCaption": "Advanced controls"
+    },
+    "mediaDeferredRetryExtraRetries": {
+      "title": "Deferred retry extra attempts",
+      "type": "integer",
+      "description": "Additional retry attempts for suspicious media/set rows during the deferred pass.",
+      "editor": "number",
+      "default": 2,
+      "minimum": 0,
+      "maximum": 5,
+      "sectionCaption": "Advanced controls"
+    },
+    "mediaDeferredRetryDelayMs": {
+      "title": "Deferred retry delay",
+      "type": "integer",
+      "description": "Base delay for the deferred photo retry pass.",
+      "editor": "number",
+      "unit": "ms",
+      "default": 1500,
+      "minimum": 0,
+      "maximum": 20000,
+      "sectionCaption": "Advanced controls"
+    },
+    "debug": {
+      "title": "Debug output",
+      "type": "boolean",
+      "description": "Include response samples and discovery details in SUMMARY. Leave off for normal production runs.",
+      "editor": "checkbox",
+      "default": false,
+      "sectionCaption": "Advanced controls"
+    },
+    "discoverBundles": {
+      "title": "Discover doc_id in JS bundles",
+      "type": "boolean",
+      "description": "Fetch Facebook JS bundles to discover the current GraphQL doc_id. Costs extra transfer; fallback doc_id is tried either way.",
+      "editor": "checkbox",
+      "default": false,
+      "sectionCaption": "Advanced controls"
+    }
+  },
+  "required": [
+    "groupUrls"
+  ]
+}
