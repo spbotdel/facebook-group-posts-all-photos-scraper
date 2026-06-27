@@ -60,6 +60,13 @@ Run up to 1,000 posts per group, read `SUMMARY.pointer.nextCursor`, then pass th
 - `media_final_count`
 - `media_review_severity`
 - `media_plus_n_risk`
+- `coverage_status` on dataset rows
+- `SUMMARY.coverageStatus`
+- `SUMMARY.bootstrapFailureReason`
+
+## Run diagnostics
+
+If `SUMMARY.coverageStatus` is `blocked_login_wall`, Facebook returned a temporary login wall during public group bootstrap. Do not report the group as empty. Retry the same group with a fresh Actor run, and in multi-group workflows handle that group separately from successful groups.
 
 ## Result grain and pricing
 

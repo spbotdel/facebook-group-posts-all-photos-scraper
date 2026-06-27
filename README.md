@@ -51,6 +51,21 @@ This Actor focuses on post completeness:
 
 In short: if the post has a photo grid, this Actor tries to bring the whole table, not just the first spoonful.
 
+## 🩺 Operational diagnostics
+
+Facebook sometimes returns a temporary login wall even for a public group. When that happens, the Actor reports it explicitly instead of silently pretending the group is empty.
+
+| `SUMMARY.coverageStatus` | Meaning | Recommended action |
+| --- | --- | --- |
+| `complete_target_reached` | Requested post count was collected. | Use the dataset normally. |
+| `complete_until_known_post` | Monitoring stopped at a known post ID. | Treat as a healthy incremental run. |
+| `complete_until_since_date` | Monitoring stopped at the date boundary. | Treat as a healthy incremental run. |
+| `blocked_login_wall` | Facebook returned a login wall during public group bootstrap. | Retry the same group with a fresh run/session. |
+| `bootstrap_failed` | The public group page could not be bootstrapped reliably. | Verify the URL and retry; inspect `SUMMARY.bootstrapAttempts`. |
+| `partial_before_target` | Collection started but stopped before the requested count. | Inspect `SUMMARY.stopReason`, warnings, and retries. |
+
+For multi-group runs, inspect `SUMMARY.groups[]`. One temporarily blocked group should not be confused with a genuinely empty group.
+
 ## ✅ Trust signals
 
 | Signal | What it means |

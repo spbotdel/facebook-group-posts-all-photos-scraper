@@ -20,7 +20,7 @@ import {
 const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36';
 const QUERY_NAME = 'GroupsCometFeedRegularStoriesPaginationQuery';
 const PROVIDER_NAME = 'dachapify_facebook_group_posts_all_photos';
-const ACTOR_VERSION = '0.3.0-beta.0';
+const ACTOR_VERSION = '0.3.1-beta.0';
 const DATASET_PUSH_BATCH_SIZE = 20;
 const STATUS_UPDATE_POST_INTERVAL = 10;
 const RUNTIME_STATE_KEY = 'RUNTIME_STATE';
@@ -1478,6 +1478,11 @@ if (initialSession) {
     html = initialSession.html;
     bootstrap = initialSession.bootstrap;
 }
+const bootstrapLoginWallDetected = Boolean(bootstrap.hasLoginWall)
+    || bootstrapAttempts.some((attempt) => attempt.hasLoginWall === true);
+const bootstrapFailureReason = !bootstrap.groupId
+    ? (bootstrapLoginWallDetected ? 'login_wall' : 'group_id_not_found')
+    : null;
 
 const discovery = client
     ? await discoverDocId(client, html, debug, discoverBundles)
@@ -1840,6 +1845,7 @@ if ((sinceDate || knownPostIds.length > 0) && !boundaryStopEnabled) {
     warnings.push('sinceDate/knownPostIds filter output, but stop-at-boundary is only trusted for CHRONOLOGICAL sorting.');
 }
 if (!bootstrap.groupId) warnings.push('Could not reliably extract public Facebook group ID from bootstrap page.');
+if (bootstrapFailureReason === 'login_wall') warnings.push('Facebook returned a login wall during public group bootstrap. This is usually a transient source/proxy/session failure; retry this group with a fresh run.');
 if (sortedPosts.length < maxPosts) warnings.push('Returned fewer posts than requested.');
 let coverageStatus = 'partial_target_not_reached';
 if (sortedPosts.length >= maxPosts) {
@@ -1848,6 +1854,10 @@ if (sortedPosts.length >= maxPosts) {
     coverageStatus = 'complete_until_since_date';
 } else if (stopReason === 'known_post_boundary_reached') {
     coverageStatus = 'complete_until_known_post';
+} else if (bootstrapFailureReason === 'login_wall') {
+    coverageStatus = 'blocked_login_wall';
+} else if (bootstrapFailureReason) {
+    coverageStatus = 'bootstrap_failed';
 } else if (stopReason && /empty|error|http/i.test(stopReason)) {
     coverageStatus = 'partial_before_target';
 }
@@ -2142,7 +2152,8 @@ const outputCheckpoint = {
     oldest_seen_created_at: oldestPost?.created_at || null,
     next_backfill_cursor: finalGraphql?.pointer?.nextCursor || null,
     coverage_status: coverageStatus,
-    stop_reason: stopReason,
+    stop_reason: stopReason || bootstrapFailureReason,
+    bootstrap_failure_reason: bootstrapFailureReason,
     last_complete_run_at: /^complete_/.test(coverageStatus) ? new Date().toISOString() : null,
 };
 
@@ -2151,7 +2162,8 @@ const summary = {
     actorVersion: ACTOR_VERSION,
     runStatus: normalizedPosts.length ? 'succeeded' : 'partial_or_empty',
     coverageStatus,
-    stopReason,
+    stopReason: stopReason || bootstrapFailureReason,
+    bootstrapFailureReason,
     warnings,
     groupUrls,
     groupUrl,
@@ -2220,6 +2232,8 @@ const summary = {
         hasHsi: Boolean(bootstrap.hsi),
         hasSpin: Boolean(bootstrap.spinR && bootstrap.spinB && bootstrap.spinT),
         hasLoginWall: bootstrap.hasLoginWall,
+        loginWallDetected: bootstrapLoginWallDetected,
+        failureReason: bootstrapFailureReason,
     },
     bootstrapAttempts,
     discovery,
@@ -2260,6 +2274,8 @@ runtimeState.phase = 'finished';
 runtimeState.summary = {
     runStatus: summary.runStatus,
     coverageStatus,
+    stopReason: stopReason || bootstrapFailureReason,
+    bootstrapFailureReason,
     outputPosts: normalizedPosts.length,
     datasetRowsPushed: pushedOutputRows,
     mediaCompletenessCounts: summary.mediaCompletenessCounts,
@@ -2294,6 +2310,7 @@ function compactGroupSummary(summary) {
         runStatus: summary.runStatus,
         coverageStatus: summary.coverageStatus,
         stopReason: summary.stopReason,
+        bootstrapFailureReason: summary.bootstrapFailureReason || summary.bootstrap?.failureReason || null,
         outputPosts: summary.outputPosts,
         candidatePostsFound: summary.candidatePostsFound,
         validPostsFound: summary.validPostsFound,

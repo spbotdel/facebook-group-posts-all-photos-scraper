@@ -35,3 +35,19 @@ Facebook can hide, remove, reorder, or expire content. For media audits, inspect
 - `media_final_count`;
 - `warnings`;
 - run `SUMMARY`.
+
+## Transient login walls
+
+Facebook may occasionally return a login wall for a public group bootstrap page. This does not always mean the group is private or empty.
+
+When detected, the run summary uses:
+
+- `coverageStatus: "blocked_login_wall"`;
+- `bootstrapFailureReason: "login_wall"`;
+- `bootstrap.loginWallDetected: true`.
+
+Recommended handling:
+
+1. Retry the same group with a fresh run.
+2. For multi-group automation, keep healthy groups separate from the temporarily blocked group.
+3. If repeated retries keep returning `blocked_login_wall`, treat the group as temporarily unavailable and try later.

@@ -79,6 +79,8 @@ Prefer these fields:
 - If `media_review_severity` is `medium` or `high`, tell the user the row should be reviewed.
 - If `created_at` is missing, do not invent a timestamp.
 - If Facebook does not expose author profile URL, do not synthesize one unless a stable `author.source_user_id` exists.
+- If `SUMMARY.coverageStatus` is `blocked_login_wall`, do not call the group empty. Explain that Facebook returned a temporary public bootstrap login wall and retry the same group with a fresh run.
+- In multi-group runs, inspect `SUMMARY.groups[]` and handle blocked groups separately from successful groups.
 
 ## Good answer shape
 

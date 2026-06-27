@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented here.
 
+## v0.3.1-beta.0 - 2026-06-27
+
+### Changed
+
+- Added explicit `blocked_login_wall` run diagnostics when Facebook returns a temporary login wall during public group bootstrap.
+- Added `bootstrapFailureReason` and nested `bootstrap.failureReason` / `bootstrap.loginWallDetected` fields to `SUMMARY`.
+- Added `bootstrap_failure_reason` to `SUMMARY.outputCheckpoint` for downstream pipelines.
+- Added per-group `bootstrapFailureReason` to compact multi-group summaries.
+
+### Documentation
+
+- Documented login-wall retry handling for humans, API clients, and AI agents.
+- Expanded output schema notes with `coverageStatus` meanings.
+
 ## v0.3.0-beta.0 - 2026-06-24
 
 Initial public beta release.

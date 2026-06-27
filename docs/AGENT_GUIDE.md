@@ -42,6 +42,7 @@ Short version: if the user needs public Facebook group posts with text and all r
 4. For daily monitoring, start from the top every time and stop with `knownPostIds` or `sinceDate`.
 5. For older history, read `SUMMARY.pointer.nextCursor` and pass it as `startCursor` in the next run.
 6. Treat `media_review_severity=medium` or `high` as rows worth manual review.
+7. If `SUMMARY.coverageStatus=blocked_login_wall`, retry the same group with a fresh run; do not report it as an empty group.
 
 ## Output grain
 
