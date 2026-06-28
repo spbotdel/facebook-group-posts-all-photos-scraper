@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## v0.3.2-beta.0 - 2026-06-28
+
+### Changed
+
+- Suppressed the generic "Returned fewer posts than requested" warning for healthy boundary completions such as `complete_until_known_post` and `complete_until_since_date`.
+
 ## v0.3.1-beta.0 - 2026-06-27
 
 ### Changed

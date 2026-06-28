@@ -1,6 +1,6 @@
 {
   "name": "facebook-group-posts-all-photos-scraper",
-  "version": "0.3.1-beta.0",
+  "version": "0.3.2-beta.0",
   "description": "Apify Actor for public Facebook group posts with all recoverable photo URLs, timestamps, authors, engagement, and agent-ready JSON.",
   "type": "module",
   "private": true,

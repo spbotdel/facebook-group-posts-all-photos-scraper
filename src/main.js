@@ -20,7 +20,7 @@ import {
 const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36';
 const QUERY_NAME = 'GroupsCometFeedRegularStoriesPaginationQuery';
 const PROVIDER_NAME = 'dachapify_facebook_group_posts_all_photos';
-const ACTOR_VERSION = '0.3.1-beta.0';
+const ACTOR_VERSION = '0.3.2-beta.0';
 const DATASET_PUSH_BATCH_SIZE = 20;
 const STATUS_UPDATE_POST_INTERVAL = 10;
 const RUNTIME_STATE_KEY = 'RUNTIME_STATE';
@@ -1841,12 +1841,13 @@ const sortedPosts = orderedPosts
 
 const stopReason = finalGraphql?.pointer?.stopReason || null;
 const warnings = [];
+const boundaryCompleteStopReasons = new Set(['since_date_boundary_reached', 'known_post_boundary_reached']);
 if ((sinceDate || knownPostIds.length > 0) && !boundaryStopEnabled) {
     warnings.push('sinceDate/knownPostIds filter output, but stop-at-boundary is only trusted for CHRONOLOGICAL sorting.');
 }
 if (!bootstrap.groupId) warnings.push('Could not reliably extract public Facebook group ID from bootstrap page.');
 if (bootstrapFailureReason === 'login_wall') warnings.push('Facebook returned a login wall during public group bootstrap. This is usually a transient source/proxy/session failure; retry this group with a fresh run.');
-if (sortedPosts.length < maxPosts) warnings.push('Returned fewer posts than requested.');
+if (sortedPosts.length < maxPosts && !boundaryCompleteStopReasons.has(stopReason)) warnings.push('Returned fewer posts than requested.');
 let coverageStatus = 'partial_target_not_reached';
 if (sortedPosts.length >= maxPosts) {
     coverageStatus = 'complete_target_reached';
