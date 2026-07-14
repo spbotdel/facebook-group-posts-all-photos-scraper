@@ -2,6 +2,19 @@
 
 Runtime depends on group size, Facebook response quality, proxy behavior, and whether `expandAllPhotos` is enabled.
 
+## Public release validation
+
+The June 19, 2026 Apify cloud validation used real photo-heavy public groups with all-photo recovery enabled.
+
+| Validation | Unique posts | Final photo URLs | Extra photos beyond feed preview | Duplicate post IDs | Medium/high media-review rows |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 6 groups x 200 posts | 1,200 | 6,307 | 1,975 | 0 | 0 |
+| 1 group x 1,000 posts | 1,000 | 4,959 | 1,662 | 0 | 0 |
+
+The maximum observed photo count was 24 on one post. The 1,000-post depth validation returned a continuation cursor. Separate continuation tests collected more than 5,000 posts by persisting the cursor between runs.
+
+These are observed validation results, not guaranteed throughput or media counts. Facebook responses, group activity, proxy sessions, and media-set availability vary.
+
 ## Practical guidance
 
 | Run type | Suggested settings | Notes |

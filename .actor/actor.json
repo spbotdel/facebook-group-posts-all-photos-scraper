@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "facebook-group-posts-all-photos-scraper",
   "title": "Facebook Group Posts & All Photos Scraper",
-  "description": "Scrape public Facebook group posts with all recoverable photo URLs, including hidden +N grids. Get text, timestamps, authors, engagement, stable post URLs, and agent-ready JSON for Apify API, MCP, monitoring, and research workflows.",
+  "description": "Scrape latest and historical posts from public Facebook groups into agent-ready JSON. Get text, timestamps, authors, engagement, stable post URLs, and all recoverable photos, including hidden +N grids. Built for Apify API, MCP, monitoring, and backfills.",
   "version": "0.3",
   "buildTag": "latest",
   "dockerfile": "../Dockerfile",

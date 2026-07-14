@@ -1,6 +1,6 @@
 {
   "title": "Facebook Group Posts & All Photos Scraper",
-  "description": "Scrape public Facebook group posts as clean, agent-ready JSON. Each result is one post with text, timestamp, author data, engagement, stable post URL, and all recoverable photo URLs. The Actor expands Facebook photo sets hidden behind +N grids, adds media quality flags for suspicious rows, and supports monitoring plus 1,000-post backfill chunks with cursor continuation for larger 5,000+ datasets. Public groups only; no private/login-only content, comments expansion, image downloads, or video guarantee.",
+  "description": "Scrape latest or historical posts from public Facebook groups as clean, agent-ready JSON. Each result is one post with text, Facebook timestamp, author data, engagement, stable post URL, and all recoverable photo URLs, including hidden +N photo sets. Supports newest-first monitoring, known-post/date boundaries, media quality flags, and cursor continuation for 5,000+ post backfills. Public groups only; no private/login-only content, expanded comments, image downloads, or video guarantee.",
   "type": "object",
   "schemaVersion": 1,
   "properties": {

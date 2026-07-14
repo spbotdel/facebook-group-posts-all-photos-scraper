@@ -8,6 +8,22 @@ This Actor is designed for Apify Console, Apify API, Apify schedules, webhooks, 
 spbotdel/facebook-group-posts-all-photos-scraper
 ```
 
+## Connect through Apify MCP
+
+The hosted Apify MCP server exposes this Actor to compatible AI clients. A minimal configuration is:
+
+```json
+{
+  "mcpServers": {
+    "apify": {
+      "url": "https://mcp.apify.com?tools=spbotdel/facebook-group-posts-all-photos-scraper"
+    }
+  }
+}
+```
+
+Authenticate through OAuth when prompted, or configure the server with your Apify token. See the [official Apify MCP documentation](https://docs.apify.com/integrations/mcp).
+
 ## Start a run with the Apify API
 
 ```bash
@@ -25,6 +41,17 @@ curl "https://api.apify.com/v2/acts/spbotdel~facebook-group-posts-all-photos-scr
 ## Node.js client example
 
 See [examples/run-with-apify-api.mjs](../examples/run-with-apify-api.mjs).
+
+## Post-run validation for agents
+
+After every run, an agent should:
+
+1. Read the default dataset.
+2. Read `SUMMARY` from the default key-value store.
+3. Confirm `SUMMARY.coverageStatus` before calling the run complete.
+4. Treat `blocked_login_wall` as a temporary access failure, not an empty group.
+5. Review rows with `media_review_severity` equal to `medium` or `high`.
+6. Save `SUMMARY.pointer.nextCursor` only for older-post continuation.
 
 ## Agent prompt examples
 

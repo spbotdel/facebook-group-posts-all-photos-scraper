@@ -2,6 +2,19 @@
 
 All notable changes to this project are documented here.
 
+## v0.3.2-beta.1 - 2026-07-14
+
+### Documentation
+
+- Rebuilt the Store README around quick start, all-photo differentiation, measured validation, run recipes, pricing, troubleshooting, and clear public-only boundaries.
+- Added complete REST, Python, Node.js, CLI, schedule, webhook, and Apify MCP integration examples.
+- Expanded AI-agent selection and post-run validation guidance.
+- Published the measured 2,200-post release validation summary without internal cost data.
+
+### Changed
+
+- Refined Actor and input-schema descriptions for latest-post monitoring, historical backfills, hidden `+N` photo recovery, and agent discovery.
+
 ## v0.3.2-beta.0 - 2026-06-28
 
 ### Changed
