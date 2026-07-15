@@ -12,7 +12,8 @@ For most public task pages, expose only these input fields:
 - `paginationMode`;
 - `expandAllPhotos`;
 - `knownPostIds` only for monitoring tasks;
-- `sinceDate` only for monitoring tasks;
+- `onlyPostsNewerThan` only for monitoring tasks;
+- `onlyPostsOlderThan` only for bounded historical-period tasks;
 - `startCursor` only for backfill tasks.
 
 Hide advanced fields unless the task is explicitly about tuning reliability or debugging. A public task should feel like a recipe, not a cockpit after a lightning strike.

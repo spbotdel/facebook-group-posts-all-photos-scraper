@@ -55,7 +55,8 @@ This Actor treats photo completeness as part of the post, not as an optional aft
 | Feed preview photos | Yes | Yes |
 | Hidden `+N` photo set | Often truncated | Expansion and fallback attempts |
 | Photo auditability | Rare | Preview/final counts, risk flag and review severity |
-| Latest-post monitoring | Often reprocesses old rows | `knownPostIds`, `sinceDate` and checkpoints |
+| Latest-post monitoring | Often reprocesses old rows | `knownPostIds`, `onlyPostsNewerThan` and checkpoints |
+| Date-window collection | Often requires downstream cleanup | Native lower and upper Facebook timestamp boundaries |
 | Historical continuation | Varies | Cursor-backed 1,000-post chunks |
 | AI-agent selection | Generic input/output | Explicit schemas, MCP prompts, `llms.txt` and diagnostics |
 | Result grain | Can be unclear | Exactly one dataset item per post |
@@ -253,7 +254,8 @@ The Actor returns source photo URLs, not binary image files. Facebook CDN URLs c
 | --- | --- |
 | Small evaluation | 10-20 posts, `CHRONOLOGICAL`, `cursor_page`, all photos enabled |
 | Latest posts | Start at the top with `CHRONOLOGICAL` and no `startCursor` |
-| Daily monitoring | Start at the top and stop with `knownPostIds` or `sinceDate` |
+| Daily monitoring | Start at the top and stop with `knownPostIds` or `onlyPostsNewerThan` |
+| Specific time period | Combine `onlyPostsNewerThan` and `onlyPostsOlderThan` |
 | Photo-complete collection | Keep `expandAllPhotos=true` and concurrency at `3` |
 | Fast preview-only test | Set `expandAllPhotos=false` |
 | Historical history | Up to 1,000 posts per group, then continue with `pointer.nextCursor` |
@@ -296,12 +298,30 @@ Alternative date boundary:
   "maxPostsPerGroup": 200,
   "sortMode": "CHRONOLOGICAL",
   "paginationMode": "cursor_page",
-  "sinceDate": "2026-07-01",
+  "onlyPostsNewerThan": "2026-07-01",
   "expandAllPhotos": true
 }
 ```
 
 Healthy incremental runs normally finish with `complete_until_known_post` or `complete_until_since_date`. Dedupe downstream by `source_post_id`, with `source_url` as a fallback.
+
+### Posts within a date range
+
+The date interval is lower-inclusive and upper-exclusive. This example returns posts published from May 1 up to, but not including, June 1:
+
+```json
+{
+  "groupUrls": ["GROUP_URL"],
+  "maxPostsPerGroup": 500,
+  "sortMode": "CHRONOLOGICAL",
+  "paginationMode": "cursor_page",
+  "onlyPostsNewerThan": "2026-05-01",
+  "onlyPostsOlderThan": "2026-06-01",
+  "expandAllPhotos": true
+}
+```
+
+`sinceDate` remains accepted through the API as a backward-compatible alias for `onlyPostsNewerThan`. New integrations should use the explicit field names above.
 
 ### Historical backfill
 
@@ -386,6 +406,7 @@ Authenticate through OAuth when prompted, or configure the Apify MCP server with
 
 - `Get the latest 50 public posts from this Facebook group. Return text, Facebook timestamp, author, permalink and all photo URLs.`
 - `Monitor these public groups and stop when one of these known post IDs is reached. Report any blocked or partial group separately.`
+- `Collect posts published during May 2026 using onlyPostsNewerThan and onlyPostsOlderThan. Return Facebook timestamps and all recoverable photo URLs.`
 - `Backfill 1,000 older posts, save SUMMARY.pointer.nextCursor, and return only rows with media_review_severity=none.`
 - `Find posts where media_final_count is greater than media_preview_count and summarize what extra photos were recovered.`
 
@@ -517,7 +538,7 @@ apify call spbotdel/facebook-group-posts-all-photos-scraper -p '{"groupUrls":["h
 Common reasons:
 
 - the group has fewer publicly available posts;
-- `knownPostIds` or `sinceDate` intentionally stopped the run;
+- `knownPostIds` or `onlyPostsNewerThan` intentionally stopped the run;
 - the paid-result or max-cost limit was reached;
 - Facebook temporarily returned an empty page or login wall;
 - a post was deleted, unavailable or lacked a stable post identity;
@@ -584,7 +605,11 @@ Yes, through cursor continuation. The current public input limit is 1,000 posts 
 
 ### Can it return only new posts every day?
 
-Yes. Schedule a newest-first run and pass `knownPostIds`, `sinceDate` or a stored checkpoint as the stop boundary. Do not use yesterday's backfill cursor to search for today's new posts.
+Yes. Schedule a newest-first run and pass `knownPostIds`, `onlyPostsNewerThan` or a stored checkpoint as the stop boundary. Do not use yesterday's backfill cursor to search for today's new posts.
+
+### Can I collect posts from a specific date range?
+
+Yes. Set `onlyPostsNewerThan` as the inclusive lower boundary and `onlyPostsOlderThan` as the exclusive upper boundary. Use `CHRONOLOGICAL` with `cursor_page` for predictable traversal.
 
 ### Can I search posts by keyword?
 

@@ -40,7 +40,9 @@ Scrapes public Facebook group posts into clean JSON. Each dataset item is one pu
 
 ## Monitoring pattern
 
-Start from the top of the group every time. Use `knownPostIds` or `sinceDate` as the stop boundary. Do not use yesterday's `nextCursor` to fetch newer posts.
+Start from the top of the group every time. Use `knownPostIds` or `onlyPostsNewerThan` as the stop boundary. Do not use yesterday's `nextCursor` to fetch newer posts.
+
+For a bounded historical period, combine inclusive `onlyPostsNewerThan` with exclusive `onlyPostsOlderThan`. The legacy `sinceDate` input remains an API alias for `onlyPostsNewerThan`.
 
 ## Backfill pattern
 

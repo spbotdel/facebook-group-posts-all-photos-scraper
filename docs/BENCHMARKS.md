@@ -20,7 +20,7 @@ These are observed validation results, not guaranteed throughput or media counts
 | Run type | Suggested settings | Notes |
 | --- | --- | --- |
 | Smoke test | 10-20 posts | Useful before scheduling a new group. |
-| Daily monitoring | 50-200 posts | Stop with `knownPostIds` or `sinceDate`. |
+| Daily monitoring | 50-200 posts | Stop with `knownPostIds` or `onlyPostsNewerThan`. |
 | Photo-heavy group | `expandAllPhotos=true`, concurrency 3 | Better completeness, more runtime. |
 | Historical chunk | 1,000 posts | Store `SUMMARY.pointer.nextCursor`. |
 | Deep backfill | Repeated 1,000-post chunks | Works best as scheduled/queued chunks. |

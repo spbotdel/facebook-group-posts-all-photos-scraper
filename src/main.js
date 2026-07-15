@@ -10,6 +10,7 @@ import {
     mediaReviewSeverity,
 } from './mediaQuality.js';
 import { buildProxySessionId } from './proxySession.js';
+import { dateRangeHit, readDateRange } from './dateRange.js';
 import {
     MAX_POSTS_PER_GROUP,
     readMaxCandidatesSetting,
@@ -20,7 +21,7 @@ import {
 const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36';
 const QUERY_NAME = 'GroupsCometFeedRegularStoriesPaginationQuery';
 const PROVIDER_NAME = 'dachapify_facebook_group_posts_all_photos';
-const ACTOR_VERSION = '0.3.2-beta.0';
+const ACTOR_VERSION = '0.3.3-beta.0';
 const DATASET_PUSH_BATCH_SIZE = 20;
 const STATUS_UPDATE_POST_INTERVAL = 10;
 const RUNTIME_STATE_KEY = 'RUNTIME_STATE';
@@ -161,19 +162,6 @@ function readStartCursor(input) {
     return null;
 }
 
-function parseSinceDate(value) {
-    if (value === undefined || value === null || value === '') return null;
-    const timestamp = Date.parse(String(value));
-    if (!Number.isFinite(timestamp)) {
-        throw new Error(`Invalid sinceDate: ${value}. Expected an ISO date/time or datepicker value.`);
-    }
-    return {
-        input: value,
-        timestamp,
-        iso: new Date(timestamp).toISOString(),
-    };
-}
-
 function readKnownPostIds(input) {
     const values = [];
     if (Array.isArray(input.knownPostIds)) {
@@ -265,9 +253,20 @@ function postBoundaryHit(post, boundary) {
     if (!post) return null;
     const postId = post.post_id ? String(post.post_id) : null;
     const postUrl = post.post_url ? String(post.post_url) : '';
+    const timestamp = postTimestampMs(post);
+    const dateHit = dateRangeHit(timestamp, boundary.dateRange);
+    if (dateHit?.action === 'skip') {
+        return {
+            ...dateHit,
+            postId,
+            createdAt: post.created_at || null,
+        };
+    }
     if (postId && boundary.knownPostIdSet?.has(postId)) {
         return {
             type: 'known_post_id',
+            kind: 'known_post',
+            action: 'stop',
             postId,
             createdAt: post.created_at || null,
         };
@@ -276,19 +275,19 @@ function postBoundaryHit(post, boundary) {
         if (known && postUrl.includes(known)) {
             return {
                 type: 'known_post_url_fragment',
+                kind: 'known_post',
+                action: 'stop',
                 postId,
                 known,
                 createdAt: post.created_at || null,
             };
         }
     }
-    const timestamp = postTimestampMs(post);
-    if (boundary.sinceDate && timestamp !== null && timestamp < boundary.sinceDate.timestamp) {
+    if (dateHit) {
         return {
-            type: 'older_than_since_date',
+            ...dateHit,
             postId,
             createdAt: post.created_at || null,
-            sinceDate: boundary.sinceDate.iso,
         };
     }
     return null;
@@ -298,6 +297,7 @@ function splitPostsAtBoundary(posts, boundary, { stopAtBoundary }) {
     const accepted = [];
     const hits = [];
     let stopped = false;
+    let stoppedAtIndex = null;
     for (const [index, post] of posts.entries()) {
         const hit = postBoundaryHit(post, boundary);
         if (!hit) {
@@ -305,8 +305,9 @@ function splitPostsAtBoundary(posts, boundary, { stopAtBoundary }) {
             continue;
         }
         hits.push({ ...hit, index });
-        if (stopAtBoundary) {
+        if (stopAtBoundary && hit.action === 'stop') {
             stopped = true;
+            stoppedAtIndex = index;
             break;
         }
     }
@@ -314,7 +315,7 @@ function splitPostsAtBoundary(posts, boundary, { stopAtBoundary }) {
         posts: accepted,
         hits,
         stopped,
-        discardedAfterBoundary: stopped ? Math.max(0, posts.length - accepted.length - 1) : 0,
+        discardedAfterBoundary: stopped ? Math.max(0, posts.length - stoppedAtIndex - 1) : 0,
     };
 }
 
@@ -1247,6 +1248,7 @@ function attachDeferredRetry(row, retry) {
 await Actor.init();
 
 const input = await Actor.getInput() || {};
+const dateRange = readDateRange(input);
 const actorEnv = Actor.getEnv();
 const maxPaidDatasetItems = readMaxPaidDatasetItemsSetting({
     ...process.env,
@@ -1279,7 +1281,8 @@ const rootInputSignature = stableStringify({
     mediaDeferredRetryDelayMs: input.mediaDeferredRetryDelayMs ?? null,
     startCursor: readStartCursor(input),
     startCursorsByGroup: input.startCursorsByGroup ?? input.cursorsByGroup ?? null,
-    sinceDate: input.sinceDate ?? null,
+    onlyPostsNewerThan: dateRange.onlyPostsNewerThan?.iso || null,
+    onlyPostsOlderThan: dateRange.onlyPostsOlderThan?.iso || null,
     knownPostIds: readKnownPostIds(input),
     checkpoint: input.checkpoint ?? null,
 });
@@ -1357,10 +1360,11 @@ const paginationMode = input.paginationMode === 'cursor_page' || startCursor
     ? 'cursor_page'
     : 'ranked_snapshot';
 const collectionLimit = maxCandidates;
-const sinceDate = parseSinceDate(input.sinceDate);
+const sinceDate = dateRange.onlyPostsNewerThan;
+const onlyPostsOlderThan = dateRange.onlyPostsOlderThan;
 const knownPostIds = readKnownPostIdsForGroup(input, groupUrl);
 const boundary = {
-    sinceDate,
+    dateRange,
     knownPostIds,
     knownPostIdSet: new Set(knownPostIds),
 };
@@ -1398,6 +1402,8 @@ const inputSignature = stableStringify({
     startCursor,
     paginationMode,
     sinceDate: sinceDate?.iso || null,
+    onlyPostsNewerThan: sinceDate?.iso || null,
+    onlyPostsOlderThan: onlyPostsOlderThan?.iso || null,
     knownPostIds,
 });
 if (runtimeState.version !== RUNTIME_STATE_VERSION || runtimeState.inputSignature !== inputSignature) {
@@ -1674,7 +1680,7 @@ if (!finalGraphql) {
                 });
                 if (boundarySlice.stopped) {
                     boundaryStoppedPage = true;
-                    boundaryStoppedReason = boundarySlice.hits[0]?.type === 'older_than_since_date'
+                    boundaryStoppedReason = boundarySlice.hits.find((hit) => hit.action === 'stop')?.kind === 'lower_date'
                         ? 'since_date_boundary_reached'
                         : 'known_post_boundary_reached';
                 }
@@ -1843,7 +1849,7 @@ const stopReason = finalGraphql?.pointer?.stopReason || null;
 const warnings = [];
 const boundaryCompleteStopReasons = new Set(['since_date_boundary_reached', 'known_post_boundary_reached']);
 if ((sinceDate || knownPostIds.length > 0) && !boundaryStopEnabled) {
-    warnings.push('sinceDate/knownPostIds filter output, but stop-at-boundary is only trusted for CHRONOLOGICAL sorting.');
+    warnings.push('onlyPostsNewerThan/sinceDate/knownPostIds filter output, but stop-at-boundary is only trusted for CHRONOLOGICAL sorting.');
 }
 if (!bootstrap.groupId) warnings.push('Could not reliably extract public Facebook group ID from bootstrap page.');
 if (bootstrapFailureReason === 'login_wall') warnings.push('Facebook returned a login wall during public group bootstrap. This is usually a transient source/proxy/session failure; retry this group with a fresh run.');
@@ -2171,6 +2177,8 @@ const summary = {
     processedGroupUrls: [groupUrl],
     skippedGroupUrls: [],
     sinceDate: sinceDate?.iso || null,
+    onlyPostsNewerThan: sinceDate?.iso || null,
+    onlyPostsOlderThan: onlyPostsOlderThan?.iso || null,
     knownPostIds,
     boundaryStopEnabled,
     boundaryHits,

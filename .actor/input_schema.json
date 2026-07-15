@@ -67,19 +67,26 @@
       "editor": "checkbox",
       "default": false
     },
-    "sinceDate": {
-      "title": "Since date",
+    "onlyPostsNewerThan": {
+      "title": "Only posts newer than",
       "type": "string",
-      "description": "Optional monitoring boundary. With New posts first sorting, the Actor stops when posts older than this date are reached.",
+      "description": "Optional lower date boundary, inclusive. Return posts published at or after this Facebook timestamp. With New posts first sorting, the Actor stops after reaching older posts. Best for incremental monitoring.",
       "editor": "datepicker",
-      "sectionCaption": "Incremental monitoring"
+      "sectionCaption": "Date range and incremental monitoring"
+    },
+    "onlyPostsOlderThan": {
+      "title": "Only posts older than",
+      "type": "string",
+      "description": "Optional upper date boundary, exclusive. Skip posts published at or after this Facebook timestamp and continue toward older history. Combine with Only posts newer than to collect a specific time period.",
+      "editor": "datepicker",
+      "sectionCaption": "Date range and incremental monitoring"
     },
     "knownPostIds": {
       "title": "Known post IDs",
       "type": "array",
       "description": "Post IDs already stored by your pipeline. With New posts first sorting, the Actor stops when it reaches one of them. Best for daily monitoring.",
       "editor": "stringList",
-      "sectionCaption": "Incremental monitoring",
+      "sectionCaption": "Date range and incremental monitoring",
       "items": {
         "type": "string"
       }
@@ -89,21 +96,21 @@
       "type": "object",
       "description": "Checkpoint object from a previous SUMMARY. Use it for incremental monitoring or per-group continuation when your pipeline stores run state.",
       "editor": "json",
-      "sectionCaption": "Incremental monitoring"
+      "sectionCaption": "Date range and incremental monitoring"
     },
     "startCursor": {
       "title": "Start cursor",
       "type": "string",
       "description": "Cursor from SUMMARY.pointer.nextCursor. Use it for older-post historical backfills only. Do not use yesterday's cursor to collect newer posts.",
       "editor": "textarea",
-      "sectionCaption": "Incremental monitoring"
+      "sectionCaption": "Date range and incremental monitoring"
     },
     "startCursorsByGroup": {
       "title": "Start cursors by group",
       "type": "object",
       "description": "Optional map of group URL to GraphQL cursor for older-page backfill in multi-group runs. Prefer passing the previous SUMMARY/checkpoint when available.",
       "editor": "json",
-      "sectionCaption": "Incremental monitoring"
+      "sectionCaption": "Date range and incremental monitoring"
     },
     "paginationMode": {
       "title": "Pagination mode",

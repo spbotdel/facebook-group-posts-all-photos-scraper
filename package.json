@@ -1,6 +1,6 @@
 {
   "name": "facebook-group-posts-all-photos-scraper",
-  "version": "0.3.2-beta.1",
+  "version": "0.3.3-beta.0",
   "description": "Apify Actor for public Facebook group posts with all recoverable photo URLs, timestamps, authors, engagement, and agent-ready JSON.",
   "type": "module",
   "private": true,
@@ -25,7 +25,7 @@
   ],
   "scripts": {
     "start": "node src/main.js",
-    "check": "node --check src/main.js && node --check src/htmlMedia.js && node --check src/mediaQuality.js && node --check src/proxySession.js && node --check src/settings.js",
+    "check": "node --check src/main.js && node --check src/dateRange.js && node --check src/htmlMedia.js && node --check src/mediaQuality.js && node --check src/proxySession.js && node --check src/settings.js",
     "test": "node --test",
     "example:api": "node examples/run-with-apify-api.mjs"
   },

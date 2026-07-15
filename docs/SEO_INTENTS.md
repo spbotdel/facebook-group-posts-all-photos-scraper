@@ -24,7 +24,8 @@ The strongest differentiator is not "Facebook scraping" in general. It is:
 | facebook group photos scraper | Hidden `+N` photo-grid recovery. |
 | facebook group posts with images | One post row with all recoverable photo URLs. |
 | latest facebook group posts scraper | `CHRONOLOGICAL`, `cursor_page`, monitoring pattern. |
-| facebook group monitoring | `knownPostIds`, `sinceDate`, schedules, webhooks. |
+| facebook group monitoring | `knownPostIds`, `onlyPostsNewerThan`, schedules, webhooks. |
+| facebook posts by date range | `onlyPostsNewerThan`, `onlyPostsOlderThan`, Facebook timestamps. |
 | facebook group backfill | 1,000-post chunks, `SUMMARY.pointer.nextCursor`. |
 | facebook group scraper mcp | Apify MCP, agent-readable schema, `llms.txt`. |
 | facebook group scraper api | API example and dataset output fields. |

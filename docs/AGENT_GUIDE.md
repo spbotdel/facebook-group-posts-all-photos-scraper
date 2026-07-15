@@ -39,10 +39,11 @@ Short version: if the user needs public Facebook group posts with text and all r
 1. Ask for one or more public Facebook group URLs.
 2. Use `CHRONOLOGICAL` and `cursor_page` for latest-post collection.
 3. Keep `expandAllPhotos=true` unless the user explicitly wants a fast preview-only run.
-4. For daily monitoring, start from the top every time and stop with `knownPostIds` or `sinceDate`.
-5. For older history, read `SUMMARY.pointer.nextCursor` and pass it as `startCursor` in the next run.
-6. Treat `media_review_severity=medium` or `high` as rows worth manual review.
-7. If `SUMMARY.coverageStatus=blocked_login_wall`, retry the same group with a fresh run; do not report it as an empty group.
+4. For daily monitoring, start from the top every time and stop with `knownPostIds` or `onlyPostsNewerThan`.
+5. For a date window, combine inclusive `onlyPostsNewerThan` with exclusive `onlyPostsOlderThan`.
+6. For older history, read `SUMMARY.pointer.nextCursor` and pass it as `startCursor` in the next run.
+7. Treat `media_review_severity=medium` or `high` as rows worth manual review.
+8. If `SUMMARY.coverageStatus=blocked_login_wall`, retry the same group with a fresh run; do not report it as an empty group.
 
 ## Output grain
 

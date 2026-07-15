@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented here.
 
+## v0.3.3-beta.0 - 2026-07-15
+
+### Added
+
+- Added `onlyPostsNewerThan` as the explicit inclusive lower Facebook timestamp boundary.
+- Added `onlyPostsOlderThan` as the exclusive upper boundary for bounded date-range collection.
+- Added validation for conflicting aliases and empty or reversed date intervals.
+
+### Compatibility
+
+- Kept `sinceDate` as a backward-compatible API alias for `onlyPostsNewerThan`.
+
 ## v0.3.2-beta.1 - 2026-07-14
 
 ### Documentation
