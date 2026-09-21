@@ -556,13 +556,15 @@ Facebook CDN URLs are tokenized and can expire. The Actor returns source URLs at
 
 ## Pricing
 
-**$2.49 per 1,000 Facebook group posts**, plus a `$0.00005` Actor-start event.
+**$2.99 per 1,000 Facebook group posts** (Free/Bronze plans), plus a `$0.00005` Actor-start event.
+Store discounts for paid Apify plans: Silver `$2.69`, Gold/Platinum/Diamond `$2.49` per 1,000 posts.
+New pricing is effective from 2026-10-06; runs started before that date are billed at the previous `$2.49` list price.
 
 | Results | Post-result charge |
 | ---: | ---: |
-| 20 posts | `$0.0498` |
-| 100 posts | `$0.2490` |
-| 1,000 posts | `$2.4900` |
+| 20 posts | `$0.0598` |
+| 100 posts | `$0.2990` |
+| 1,000 posts | `$2.9900` |
 
 The billable result is `Facebook group post`:
 
