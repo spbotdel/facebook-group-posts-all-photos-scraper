@@ -45,6 +45,21 @@ Short version: if the user needs public Facebook group posts with text and all r
 7. Treat `media_review_severity=medium` or `high` as rows worth manual review.
 8. If `SUMMARY.coverageStatus=blocked_login_wall`, retry the same group with a fresh run; do not report it as an empty group.
 
+## State routing (which field when)
+
+| Goal | Field | Rule |
+| --- | --- | --- |
+| Daily latest monitoring | `knownPostIds` | Pass stored post IDs; Actor stops at the first match. |
+| Date-cut monitoring | `onlyPostsNewerThan` (+ optional `onlyPostsOlderThan`) | Inclusive lower, exclusive upper: `[newer, older)`. |
+| Older-post backfill | `startCursor` from `SUMMARY.pointer.nextCursor` | One group per cursor chain; multi-group uses `startCursorsByGroup`. |
+| Stored pipeline state | `checkpoint` from a previous `SUMMARY` | Resume across scheduled runs. |
+
+Never pass a backfill cursor into a latest run. Never reuse one group's cursor for another group.
+
+## Cost rule
+
+Each post is one billable result. `maxGroupsPerRun x maxPostsPerGroup` multiplies the bill: 10 groups x 1,000 posts is about 10,000 results.
+
 ## Output grain
 
 Each dataset row is one Facebook group post. Photo URLs recovered for that post are included inside the same row.
