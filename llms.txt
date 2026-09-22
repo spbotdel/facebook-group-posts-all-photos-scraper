@@ -73,3 +73,11 @@ If `SUMMARY.coverageStatus` is `blocked_login_wall`, Facebook returned a tempora
 ## Result grain and pricing
 
 One result equals one Facebook group post. Photo URLs recovered for that post are included in the same dataset row.
+
+## State routing
+
+- daily latest: `knownPostIds`; date cut: `onlyPostsNewerThan` (+ `onlyPostsOlderThan`); backfill: `startCursor` from `SUMMARY.pointer.nextCursor`; stored state: `checkpoint`. Never feed a backfill cursor into a latest run.
+
+## Cost rule
+
+- each post is one billable result; groups x posts-per-group multiplies the bill.
