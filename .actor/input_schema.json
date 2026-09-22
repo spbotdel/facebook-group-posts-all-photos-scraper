@@ -19,7 +19,7 @@
     "maxGroupsPerRun": {
       "title": "Max groups per run",
       "type": "integer",
-      "description": "Maximum number of groupUrls to process in one Actor run. Extra group URLs are skipped and listed in SUMMARY.skippedGroupUrls.",
+      "description": "Maximum number of groupUrls to process in one Actor run. Results and billing multiply per group. Extra group URLs are skipped and listed in SUMMARY.skippedGroupUrls.",
       "editor": "number",
       "unit": "groups",
       "default": 10,
@@ -29,7 +29,7 @@
     "maxPostsPerGroup": {
       "title": "Max posts per group",
       "type": "integer",
-      "description": "Maximum number of post results to return per group. For deep historical backfills, run up to 1,000 posts, store SUMMARY.pointer.nextCursor, then continue with startCursor.",
+      "description": "Maximum number of post results to return per group. Each post is one billable result: 10 groups x 1,000 posts is about 10,000 billable results. For deep historical backfills, run up to 1,000 posts, store SUMMARY.pointer.nextCursor, then continue with startCursor.",
       "editor": "number",
       "unit": "posts",
       "default": 30,
@@ -70,21 +70,21 @@
     "onlyPostsNewerThan": {
       "title": "Only posts newer than",
       "type": "string",
-      "description": "Optional lower date boundary, inclusive. Return posts published at or after this Facebook timestamp. With New posts first sorting, the Actor stops after reaching older posts. Best for incremental monitoring.",
+      "description": "Canonical lower date boundary (inclusive) of the [onlyPostsNewerThan, onlyPostsOlderThan) window. Return posts published at or after this Facebook timestamp. With New posts first sorting, the Actor stops after reaching older posts. Best for incremental monitoring; pair with onlyPostsOlderThan for exact time periods.",
       "editor": "datepicker",
       "sectionCaption": "Date range and incremental monitoring"
     },
     "onlyPostsOlderThan": {
       "title": "Only posts older than",
       "type": "string",
-      "description": "Optional upper date boundary, exclusive. Skip posts published at or after this Facebook timestamp and continue toward older history. Combine with Only posts newer than to collect a specific time period.",
+      "description": "Canonical upper date boundary (exclusive) of the [onlyPostsNewerThan, onlyPostsOlderThan) window. Skip posts published at or after this Facebook timestamp and continue toward older history. Combine with onlyPostsNewerThan to collect a specific time period.",
       "editor": "datepicker",
       "sectionCaption": "Date range and incremental monitoring"
     },
     "knownPostIds": {
       "title": "Known post IDs",
       "type": "array",
-      "description": "Post IDs already stored by your pipeline. With New posts first sorting, the Actor stops when it reaches one of them. Best for daily monitoring.",
+      "description": "Post IDs already stored by your pipeline. With New posts first sorting, the Actor stops when it reaches one of them. Best for daily latest monitoring. State routing: daily latest monitoring -> knownPostIds; older-post backfill -> startCursor from SUMMARY.pointer.nextCursor; multi-group backfill -> startCursorsByGroup; stored pipeline state -> checkpoint. Never pass a backfill cursor into a latest run.",
       "editor": "stringList",
       "sectionCaption": "Date range and incremental monitoring",
       "items": {
@@ -94,21 +94,21 @@
     "checkpoint": {
       "title": "Checkpoint",
       "type": "object",
-      "description": "Checkpoint object from a previous SUMMARY. Use it for incremental monitoring or per-group continuation when your pipeline stores run state.",
+      "description": "Checkpoint object from a previous SUMMARY. Use it when your pipeline stores run state across scheduled runs. State routing: daily latest monitoring -> knownPostIds; older-post backfill -> startCursor from SUMMARY.pointer.nextCursor; multi-group backfill -> startCursorsByGroup; stored pipeline state -> checkpoint. Never pass a backfill cursor into a latest run.",
       "editor": "json",
       "sectionCaption": "Date range and incremental monitoring"
     },
     "startCursor": {
       "title": "Start cursor",
       "type": "string",
-      "description": "Cursor from SUMMARY.pointer.nextCursor. Use it for older-post historical backfills only. Do not use yesterday's cursor to collect newer posts.",
+      "description": "Opaque cursor string from SUMMARY.pointer.nextCursor. Use it for older-post historical backfills only. Do not use yesterday's cursor to collect newer posts. State routing: daily latest monitoring -> knownPostIds; older-post backfill -> startCursor from SUMMARY.pointer.nextCursor; multi-group backfill -> startCursorsByGroup; stored pipeline state -> checkpoint. Never pass a backfill cursor into a latest run.",
       "editor": "textarea",
       "sectionCaption": "Date range and incremental monitoring"
     },
     "startCursorsByGroup": {
       "title": "Start cursors by group",
       "type": "object",
-      "description": "Optional map of group URL to GraphQL cursor for older-page backfill in multi-group runs. Prefer passing the previous SUMMARY/checkpoint when available.",
+      "description": "Optional map of group URL to GraphQL cursor for older-page backfill in multi-group runs. Prefer passing the previous SUMMARY/checkpoint when available. State routing: daily latest monitoring -> knownPostIds; older-post backfill -> startCursor from SUMMARY.pointer.nextCursor; multi-group backfill -> startCursorsByGroup; stored pipeline state -> checkpoint. Never pass a backfill cursor into a latest run.",
       "editor": "json",
       "sectionCaption": "Date range and incremental monitoring"
     },
@@ -131,7 +131,7 @@
     "maxCandidates": {
       "title": "Max candidate posts",
       "type": "integer",
-      "description": "Candidate posts collected before local sorting. Use 0 for automatic candidate budget based on Max posts per group.",
+      "description": "Candidate posts collected before local sorting. Leave 0 for auto budget (about 3x maxPostsPerGroup, minimum +20). Raise only if SUMMARY reports candidate_limit_reached with posts missing.",
       "editor": "number",
       "unit": "posts",
       "default": 0,
@@ -142,7 +142,7 @@
     "maxPages": {
       "title": "Max GraphQL pages",
       "type": "integer",
-      "description": "Maximum GraphQL pagination requests after the public group bootstrap. Use 0 for automatic page budget based on Max posts per group.",
+      "description": "Maximum GraphQL pagination requests after the public group bootstrap. Leave 0 for auto budget (about 0.85x maxPostsPerGroup, minimum 20). Raise only if SUMMARY reports a page cap with posts missing.",
       "editor": "number",
       "unit": "pages",
       "default": 0,
@@ -153,7 +153,7 @@
     "bootstrapRetries": {
       "title": "Bootstrap retries",
       "type": "integer",
-      "description": "How many fresh proxy/session bootstrap attempts to try if Facebook returns a poor or login-walled public group page.",
+      "description": "Advanced. Leave the default unless a SUMMARY diagnostic names this exact knob. How many fresh proxy/session bootstrap attempts to try if Facebook returns a poor or login-walled public group page.",
       "editor": "number",
       "default": 4,
       "minimum": 1,
@@ -163,7 +163,7 @@
     "graphqlPageRetries": {
       "title": "GraphQL page retries",
       "type": "integer",
-      "description": "Retry count for transient empty/small GraphQL pagination responses.",
+      "description": "Advanced. Leave the default unless a SUMMARY diagnostic names this exact knob. Retry count for transient empty/small GraphQL pagination responses.",
       "editor": "number",
       "default": 2,
       "minimum": 0,
@@ -173,7 +173,7 @@
     "proxyCountry": {
       "title": "Proxy country",
       "type": "string",
-      "description": "Apify proxy country code.",
+      "description": "Advanced. Leave the default unless a SUMMARY diagnostic names this exact knob. Apify proxy country code.",
       "editor": "textfield",
       "default": "US",
       "sectionCaption": "Advanced controls"
@@ -181,7 +181,7 @@
     "mediaSetRetries": {
       "title": "Photo-set retries",
       "type": "integer",
-      "description": "Retry count for each Facebook media/set request.",
+      "description": "Advanced. Leave the default unless a SUMMARY diagnostic names this exact knob. Retry count for each Facebook media/set request.",
       "editor": "number",
       "default": 1,
       "minimum": 0,
@@ -191,7 +191,7 @@
     "mediaSetRetryDelayMs": {
       "title": "Photo-set retry delay",
       "type": "integer",
-      "description": "Base delay for media/set retries.",
+      "description": "Advanced. Leave the default unless a SUMMARY diagnostic names this exact knob. Base delay for media/set retries.",
       "editor": "number",
       "unit": "ms",
       "default": 800,
@@ -202,7 +202,7 @@
     "mediaExpansionConcurrency": {
       "title": "Photo expansion concurrency",
       "type": "integer",
-      "description": "How many posts can expand Facebook media/set pages in parallel. Higher values can speed up all-photos runs but may increase transient Facebook/proxy failures.",
+      "description": "Advanced. Leave the default unless a SUMMARY diagnostic names this exact knob. How many posts can expand Facebook media/set pages in parallel. Higher values can speed up all-photos runs but may increase transient Facebook/proxy failures.",
       "editor": "number",
       "default": 3,
       "minimum": 1,
@@ -212,7 +212,7 @@
     "mediaExpansionAdaptive": {
       "title": "Adaptive photo expansion",
       "type": "boolean",
-      "description": "When enabled, the Actor can lower high photo expansion concurrency back to the stable level if recent media/set expansion quality degrades.",
+      "description": "Advanced. Leave the default unless a SUMMARY diagnostic names this exact knob. When enabled, the Actor can lower high photo expansion concurrency back to the stable level if recent media/set expansion quality degrades.",
       "editor": "checkbox",
       "default": true,
       "sectionCaption": "Advanced controls"
@@ -220,7 +220,7 @@
     "mediaDeferredRetry": {
       "title": "Deferred photo retry",
       "type": "boolean",
-      "description": "Retry only suspicious photo-set rows after the main pass, before final dataset output. This improves +N coverage at a small extra runtime cost.",
+      "description": "Advanced. Leave the default unless a SUMMARY diagnostic names this exact knob. Retry only suspicious photo-set rows after the main pass, before final dataset output. This improves +N coverage at a small extra runtime cost.",
       "editor": "checkbox",
       "default": true,
       "sectionCaption": "Advanced controls"
@@ -228,7 +228,7 @@
     "mediaDeferredRetryConcurrency": {
       "title": "Deferred retry concurrency",
       "type": "integer",
-      "description": "How many suspicious posts to retry in parallel during the deferred photo retry pass.",
+      "description": "Advanced. Leave the default unless a SUMMARY diagnostic names this exact knob. How many suspicious posts to retry in parallel during the deferred photo retry pass.",
       "editor": "number",
       "default": 2,
       "minimum": 1,
@@ -238,7 +238,7 @@
     "mediaDeferredRetryExtraRetries": {
       "title": "Deferred retry extra attempts",
       "type": "integer",
-      "description": "Additional retry attempts for suspicious media/set rows during the deferred pass.",
+      "description": "Advanced. Leave the default unless a SUMMARY diagnostic names this exact knob. Additional retry attempts for suspicious media/set rows during the deferred pass.",
       "editor": "number",
       "default": 2,
       "minimum": 0,
@@ -248,7 +248,7 @@
     "mediaDeferredRetryDelayMs": {
       "title": "Deferred retry delay",
       "type": "integer",
-      "description": "Base delay for the deferred photo retry pass.",
+      "description": "Advanced. Leave the default unless a SUMMARY diagnostic names this exact knob. Base delay for the deferred photo retry pass.",
       "editor": "number",
       "unit": "ms",
       "default": 1500,
@@ -259,7 +259,7 @@
     "debug": {
       "title": "Debug output",
       "type": "boolean",
-      "description": "Include response samples and discovery details in SUMMARY. Leave off for normal production runs.",
+      "description": "Advanced. Leave the default unless a SUMMARY diagnostic names this exact knob. Include response samples and discovery details in SUMMARY. Leave off for normal production runs.",
       "editor": "checkbox",
       "default": false,
       "sectionCaption": "Advanced controls"
@@ -267,7 +267,7 @@
     "discoverBundles": {
       "title": "Discover doc_id in JS bundles",
       "type": "boolean",
-      "description": "Fetch Facebook JS bundles to discover the current GraphQL doc_id. Costs extra transfer; fallback doc_id is tried either way.",
+      "description": "Advanced. Leave the default unless a SUMMARY diagnostic names this exact knob. Fetch Facebook JS bundles to discover the current GraphQL doc_id. Costs extra transfer; fallback doc_id is tried either way.",
       "editor": "checkbox",
       "default": false,
       "sectionCaption": "Advanced controls"
