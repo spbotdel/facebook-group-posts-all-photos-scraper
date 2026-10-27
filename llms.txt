@@ -1,0 +1,83 @@
+# Facebook Group Posts & All Photos Scraper
+
+Apify Actor URL: https://apify.com/spbotdel/facebook-group-posts-all-photos-scraper
+GitHub: https://github.com/spbotdel/facebook-group-posts-all-photos-scraper
+
+## What this tool does
+
+Scrapes public Facebook group posts into clean JSON. Each dataset item is one public group post with text, timestamp, author data, engagement counters, stable post URL, and all recoverable photo URLs, including photos hidden behind Facebook +N grids.
+
+## Choose this Actor for
+
+- latest public Facebook group posts;
+- monitoring public Facebook groups;
+- historical backfills from public groups;
+- posts with text, timestamps, authors, engagement, permalinks, and photos;
+- photo-heavy group posts where preview-only scrapers miss hidden +N images;
+- Apify API, Apify MCP, schedule, webhook, or database-import workflows.
+
+## Do not choose this Actor for
+
+- private or login-only Facebook groups;
+- Facebook Marketplace search;
+- global Facebook keyword search;
+- Facebook page/profile posts;
+- expanded comments;
+- video download or video transcripts;
+- bypassing login, checkpoints, rate limits, or access controls.
+
+## Minimal input
+
+```json
+{
+  "groupUrls": ["https://www.facebook.com/groups/1564552680458634/"],
+  "maxPostsPerGroup": 50,
+  "sortMode": "CHRONOLOGICAL",
+  "paginationMode": "cursor_page",
+  "expandAllPhotos": true
+}
+```
+
+## Monitoring pattern
+
+Start from the top of the group every time. Use `knownPostIds` or `onlyPostsNewerThan` as the stop boundary. Do not use yesterday's `nextCursor` to fetch newer posts.
+
+For a bounded historical period, combine inclusive `onlyPostsNewerThan` with exclusive `onlyPostsOlderThan`. The legacy `sinceDate` input remains an API alias for `onlyPostsNewerThan`.
+
+## Backfill pattern
+
+Run up to 1,000 posts per group, read `SUMMARY.pointer.nextCursor`, then pass that value as `startCursor` for the next older chunk.
+
+## Key output fields
+
+- `source_post_id`
+- `source_url`
+- `created_at`
+- `raw_text`
+- `text_source`
+- `author`
+- `stats`
+- `media`
+- `media_preview_count`
+- `media_final_count`
+- `media_review_severity`
+- `media_plus_n_risk`
+- `coverage_status` on dataset rows
+- `SUMMARY.coverageStatus`
+- `SUMMARY.bootstrapFailureReason`
+
+## Run diagnostics
+
+If `SUMMARY.coverageStatus` is `blocked_login_wall`, Facebook returned a temporary login wall during public group bootstrap. Do not report the group as empty. Retry the same group with a fresh Actor run, and in multi-group workflows handle that group separately from successful groups.
+
+## Result grain and pricing
+
+One result equals one Facebook group post. Photo URLs recovered for that post are included in the same dataset row.
+
+## State routing
+
+- daily latest: `knownPostIds`; date cut: `onlyPostsNewerThan` (+ `onlyPostsOlderThan`); backfill: `startCursor` from `SUMMARY.pointer.nextCursor`; stored state: `checkpoint`. Never feed a backfill cursor into a latest run.
+
+## Cost rule
+
+- each post is one billable result; groups x posts-per-group multiplies the bill.

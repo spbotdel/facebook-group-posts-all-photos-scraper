@@ -1,0 +1,94 @@
+# Changelog
+
+All notable changes to this project are documented here.
+
+## v0.3.16 - 2026-10-27
+
+### Fixed
+
+- Hardened relative date parsing, including bounded overflow handling and UTC interpretation for offsetless ISO timestamps.
+- Rejected numeric and zero-valued relative date boundaries instead of silently producing invalid windows.
+- Guarded Actor status-message updates so diagnostics cannot fail an otherwise valid collection.
+- Added an early run status message before feed collection starts.
+
+### Verification
+
+- Local syntax check passed; 35 of 35 tests passed.
+- Apify build `0.3.16` succeeded; smoke run `SQVknSPUTNseGSWx4` returned two posts.
+
+## v0.3.3-beta.0 - 2026-07-15
+
+### Added
+
+- Added `onlyPostsNewerThan` as the explicit inclusive lower Facebook timestamp boundary.
+- Added `onlyPostsOlderThan` as the exclusive upper boundary for bounded date-range collection.
+- Added validation for conflicting aliases and empty or reversed date intervals.
+
+### Compatibility
+
+- Kept `sinceDate` as a backward-compatible API alias for `onlyPostsNewerThan`.
+
+## v0.3.2-beta.1 - 2026-07-14
+
+### Documentation
+
+- Rebuilt the Store README around quick start, all-photo differentiation, measured validation, run recipes, pricing, troubleshooting, and clear public-only boundaries.
+- Added complete REST, Python, Node.js, CLI, schedule, webhook, and Apify MCP integration examples.
+- Expanded AI-agent selection and post-run validation guidance.
+- Published the measured 2,200-post release validation summary without internal cost data.
+
+### Changed
+
+- Refined Actor and input-schema descriptions for latest-post monitoring, historical backfills, hidden `+N` photo recovery, and agent discovery.
+
+## v0.3.2-beta.0 - 2026-06-28
+
+### Changed
+
+- Suppressed the generic "Returned fewer posts than requested" warning for healthy boundary completions such as `complete_until_known_post` and `complete_until_since_date`.
+
+## v0.3.1-beta.0 - 2026-06-27
+
+### Changed
+
+- Added explicit `blocked_login_wall` run diagnostics when Facebook returns a temporary login wall during public group bootstrap.
+- Added `bootstrapFailureReason` and nested `bootstrap.failureReason` / `bootstrap.loginWallDetected` fields to `SUMMARY`.
+- Added `bootstrap_failure_reason` to `SUMMARY.outputCheckpoint` for downstream pipelines.
+- Added per-group `bootstrapFailureReason` to compact multi-group summaries.
+
+### Documentation
+
+- Documented login-wall retry handling for humans, API clients, and AI agents.
+- Expanded output schema notes with `coverageStatus` meanings.
+
+## v0.3.0-beta.0 - 2026-06-24
+
+Initial public beta release.
+
+### Added
+
+- Public Apify Actor package for scraping public Facebook group posts.
+- One dataset row per Facebook group post.
+- Public group URL input with numeric and vanity group support.
+- `CHRONOLOGICAL`, `RECENT_ACTIVITY`, and `TOP_POSTS` feed sort modes.
+- Cursor-page mode for monitoring and historical backfills.
+- Stable post IDs and permalinks when Facebook exposes them.
+- Post creation timestamps when Facebook exposes them.
+- Author ID, name, and profile URL when available.
+- Engagement counters when available.
+- Normal post text and nested/attached-story text extraction.
+- Feed preview photo extraction.
+- Hidden `+N` photo-grid recovery attempts through media-set expansion.
+- Deferred retry path for suspicious media rows.
+- Media quality flags: `media_review_severity`, `media_plus_n_risk`, `media_completeness`.
+- `SUMMARY.pointer.nextCursor` for older-post continuation.
+- Agent-oriented docs, examples, and output schema.
+- GitHub Actions CI with syntax checks and parser tests.
+
+### Boundaries
+
+- Public Facebook groups only.
+- No private or login-only group access.
+- No expanded comments.
+- No video download or transcript guarantee.
+- Photo URLs are returned; image binaries are not downloaded into Apify storage.

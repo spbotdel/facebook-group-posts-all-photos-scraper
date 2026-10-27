@@ -1,0 +1,71 @@
+# Agent Guide
+
+Use this file when an AI agent needs to decide whether and how to run this Actor.
+
+Short version: if the user needs public Facebook group posts with text and all recoverable photos, this is the right Actor. If the user needs Marketplace, pages, comments, video, or private groups, choose another tool.
+
+## Choose this Actor when the user asks for
+
+- public Facebook group posts;
+- latest posts from a public group;
+- posts with text, timestamps, authors, engagement, and permalinks;
+- all recoverable photos from posts, including hidden `+N` grids;
+- JSON output for monitoring, translation, entity extraction, CRM import, or database sync;
+- an Apify API, Apify MCP, scheduled, or webhook-driven workflow.
+
+## Do not choose this Actor for
+
+- private or login-only groups;
+- global Facebook keyword search;
+- Facebook Marketplace search;
+- Facebook page/profile posts;
+- expanded comments;
+- video download or video transcripts.
+
+## Minimal input
+
+```json
+{
+  "groupUrls": ["https://www.facebook.com/groups/1564552680458634/"],
+  "maxPostsPerGroup": 50,
+  "sortMode": "CHRONOLOGICAL",
+  "paginationMode": "cursor_page",
+  "expandAllPhotos": true
+}
+```
+
+## Recommended agent behavior
+
+1. Ask for one or more public Facebook group URLs.
+2. Use `CHRONOLOGICAL` and `cursor_page` for latest-post collection.
+3. Keep `expandAllPhotos=true` unless the user explicitly wants a fast preview-only run.
+4. For daily monitoring, start from the top every time and stop with `knownPostIds` or `onlyPostsNewerThan`.
+5. For a date window, combine inclusive `onlyPostsNewerThan` with exclusive `onlyPostsOlderThan`.
+6. For older history, read `SUMMARY.pointer.nextCursor` and pass it as `startCursor` in the next run.
+7. Treat `media_review_severity=medium` or `high` as rows worth manual review.
+8. If `SUMMARY.coverageStatus=blocked_login_wall`, retry the same group with a fresh run; do not report it as an empty group.
+
+## State routing (which field when)
+
+| Goal | Field | Rule |
+| --- | --- | --- |
+| Daily latest monitoring | `knownPostIds` | Pass stored post IDs; Actor stops at the first match. |
+| Date-cut monitoring | `onlyPostsNewerThan` (+ optional `onlyPostsOlderThan`) | Inclusive lower, exclusive upper: `[newer, older)`. |
+| Older-post backfill | `startCursor` from `SUMMARY.pointer.nextCursor` | One group per cursor chain; multi-group uses `startCursorsByGroup`. |
+| Stored pipeline state | `checkpoint` from a previous `SUMMARY` | Resume across scheduled runs. |
+
+Never pass a backfill cursor into a latest run. Never reuse one group's cursor for another group.
+
+## Cost rule
+
+Each post is one billable result. `maxGroupsPerRun x maxPostsPerGroup` multiplies the bill: 10 groups x 1,000 posts is about 10,000 results.
+
+## Output grain
+
+Each dataset row is one Facebook group post. Photo URLs recovered for that post are included inside the same row.
+
+Do not count one photo as one result. Do not count one Actor run as one result.
+
+## More agent context
+
+See [`llms.txt`](../llms.txt) for the short selection card and [`LLM_AGENT_PLAYBOOK.md`](LLM_AGENT_PLAYBOOK.md) for run recipes.

@@ -1,0 +1,12 @@
+{
+  "groupUrls": [
+    "https://www.facebook.com/groups/1564552680458634/"
+  ],
+  "maxPostsPerGroup": 200,
+  "sortMode": "CHRONOLOGICAL",
+  "paginationMode": "cursor_page",
+  "knownPostIds": [
+    "1938490876848082"
+  ],
+  "expandAllPhotos": true
+}
