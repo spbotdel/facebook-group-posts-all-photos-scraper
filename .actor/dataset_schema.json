@@ -4,80 +4,281 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
     "properties": {
-      "record_type": { "type": "string" },
-      "source_platform": { "type": "string" },
-      "provider": { "type": "string" },
-      "rank": { "type": "integer" },
-      "group_id": { "type": ["string", "null"] },
-      "group_url": { "type": "string" },
-      "group_name": { "type": ["string", "null"] },
-      "source_post_id": { "type": ["string", "null"] },
-      "source_url": { "type": ["string", "null"] },
-      "created_at": { "type": ["string", "null"] },
-      "created_at_source": { "type": ["string", "null"] },
-      "raw_text": { "type": "string" },
-      "text_source": { "type": "string" },
-      "text_missing_reason": { "type": ["string", "null"] },
+      "record_type": {
+        "type": "string",
+        "description": "Kind of dataset record this row represents; post rows use the value post."
+      },
+      "source_platform": {
+        "type": "string",
+        "description": "Platform the record was collected from, normally facebook."
+      },
+      "provider": {
+        "type": "string",
+        "description": "Normalized identifier of the data provider or collection backend that produced this row."
+      },
+      "rank": {
+        "type": "integer",
+        "description": "One-based position of this post in the result order of the group run."
+      },
+      "group_id": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "Resolved numeric Facebook group ID as a string, or null when it could not be determined."
+      },
+      "group_url": {
+        "type": "string",
+        "description": "Public Facebook URL of the group the post was collected from."
+      },
+      "group_name": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "Public display name of the Facebook group, or null when not exposed."
+      },
+      "source_post_id": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "Stable Facebook post identifier as a string when exposed, otherwise null."
+      },
+      "source_url": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "Public permalink URL of the Facebook post, or null when no permalink was exposed."
+      },
+      "created_at": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "Facebook publication time of the post as an ISO 8601 timestamp (not the scrape time), or null when unavailable."
+      },
+      "created_at_source": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "Provenance of the publication timestamp, such as graphql_creation_time, or null when no timestamp was found."
+      },
+      "raw_text": {
+        "type": "string",
+        "description": "Best recovered body text of the post, taken from the direct or nested message; may be an empty string when no text was exposed."
+      },
+      "text_source": {
+        "type": "string",
+        "description": "Extraction path that produced the post text, such as direct_message or fallback_nested_message."
+      },
+      "text_missing_reason": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "Diagnostic code explaining why no body text was recovered, or null when text is present."
+      },
       "author": {
         "type": "object",
         "properties": {
-          "id": { "type": ["string", "null"] },
-          "source_user_id": { "type": ["string", "null"] },
-          "name": { "type": ["string", "null"] },
-          "url": { "type": ["string", "null"] }
-        }
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Author identifier as a string, or null when not exposed."
+          },
+          "source_user_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Numeric Facebook user ID of the author as a string, or null when not exposed."
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Public display name of the author, or null when not exposed."
+          },
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Public Facebook profile URL of the author, or null when not exposed."
+          }
+        },
+        "description": "Public identity of the post author when Facebook exposes it."
       },
-      "stats": { "type": "object" },
+      "stats": {
+        "type": "object",
+        "description": "Best-effort public engagement counters for the post, such as reactions, comments and shares, as integers when exposed."
+      },
       "media": {
         "type": "array",
         "items": {
           "type": "object",
           "properties": {
-            "source_media_id": { "type": "string" },
-            "media_type": { "type": "string" },
-            "source_url": { "type": "string" },
-            "thumbnail_url": { "type": "string" },
-            "width": { "type": "integer" },
-            "height": { "type": "integer" },
-            "ocr_text": { "type": ["string", "null"] },
-            "source": { "type": "string" },
-            "index": { "type": "integer" }
+            "source_media_id": {
+              "type": "string"
+            },
+            "media_type": {
+              "type": "string"
+            },
+            "source_url": {
+              "type": "string"
+            },
+            "thumbnail_url": {
+              "type": "string"
+            },
+            "width": {
+              "type": "integer"
+            },
+            "height": {
+              "type": "integer"
+            },
+            "ocr_text": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "source": {
+              "type": "string"
+            },
+            "index": {
+              "type": "integer"
+            }
           }
-        }
+        },
+        "description": "List of final recovered public photo objects attached to the post."
       },
-      "media_preview_count": { "type": "integer" },
-      "media_expanded_count": { "type": "integer" },
-      "media_final_count": { "type": "integer" },
-      "media_completeness": { "type": "string" },
-      "media_completeness_legacy": { "type": "string" },
-      "media_review_severity": { "type": "string" },
-      "media_plus_n_risk": { "type": "boolean" },
+      "media_preview_count": {
+        "type": "integer",
+        "description": "Number of valid photo URLs exposed directly in the group feed payload before any media expansion."
+      },
+      "media_expanded_count": {
+        "type": "integer",
+        "description": "Number of valid photo URLs recovered through additional media expansion requests."
+      },
+      "media_final_count": {
+        "type": "integer",
+        "description": "Final number of photo objects returned in the media array after deduplication and expansion."
+      },
+      "media_completeness": {
+        "type": "string",
+        "description": "Outcome classification of media expansion indicating how completely the post's photos were recovered."
+      },
+      "media_completeness_legacy": {
+        "type": "string",
+        "description": "Media completeness value in the older classification scheme, kept for backward compatibility."
+      },
+      "media_review_severity": {
+        "type": "string",
+        "description": "Audit signal for how urgently media recovery should be reviewed: none, low, medium or high."
+      },
+      "media_plus_n_risk": {
+        "type": "boolean",
+        "description": "True when Facebook likely hid additional photos behind a \"+N\" overlay that were not recovered, otherwise false."
+      },
       "media_deferred_retry": {
-        "type": ["object", "null"],
+        "type": [
+          "object",
+          "null"
+        ],
         "properties": {
-          "attempted": { "type": "boolean" },
-          "improved": { "type": "boolean" },
-          "previous": { "type": "object" },
-          "final": { "type": "object" },
-          "requested_retries": { "type": "integer" },
-          "retry_delay_ms": { "type": "integer" },
-          "status_code": { "type": ["integer", "null"] },
-          "url": { "type": ["string", "null"] },
-          "error": { "type": ["string", "null"] }
-        }
+          "attempted": {
+            "type": "boolean",
+            "description": "True when the deferred media retry was actually executed."
+          },
+          "improved": {
+            "type": "boolean",
+            "description": "True when the deferred retry recovered more media than the previous attempt."
+          },
+          "previous": {
+            "type": "object",
+            "description": "Snapshot of media counts and completeness before the deferred retry ran."
+          },
+          "final": {
+            "type": "object",
+            "description": "Snapshot of media counts and completeness after the deferred retry finished."
+          },
+          "requested_retries": {
+            "type": "integer",
+            "description": "Number of retry attempts requested for the deferred media recovery."
+          },
+          "retry_delay_ms": {
+            "type": "integer",
+            "description": "Delay before the deferred retry, in milliseconds."
+          },
+          "status_code": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "HTTP status code returned by the deferred retry request, or null when no response was received."
+          },
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "URL requested during the deferred media retry, or null when no request was made."
+          },
+          "error": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Error message from the deferred media retry, or null when it completed without error."
+          }
+        },
+        "description": "Details of a delayed follow-up attempt to recover missing media, or null when no deferred retry was scheduled."
       },
       "media_set_tokens": {
         "type": "array",
-        "items": { "type": "string" }
+        "items": {
+          "type": "string"
+        },
+        "description": "Facebook media-set (album) tokens linked to the post and used to expand its photo collection."
       },
-      "coverage_status": { "type": "string" },
+      "coverage_status": {
+        "type": "string",
+        "description": "Reason collection stopped for the row's group, describing how far the group feed was covered."
+      },
       "warnings": {
         "type": "array",
-        "items": { "type": "string" }
+        "items": {
+          "type": "string"
+        },
+        "description": "List of non-fatal diagnostic warning codes or messages raised while processing this post."
       },
-      "pagination": { "type": ["object", "null"] },
-      "raw_payload_json": { "type": ["object", "null"] },
-      "raw_comet_payload_json": { "type": ["object", "null"] }
+      "pagination": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "description": "Feed pagination state, such as cursor and page position, at the point this post was collected, or null when not applicable."
+      },
+      "raw_payload_json": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "description": "Optional parsed source payload for the post, included only when raw payload output is enabled, otherwise null."
+      },
+      "raw_comet_payload_json": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "description": "Optional parsed Facebook Comet (web client GraphQL) payload for the post, included only when raw payload output is enabled, otherwise null."
+      }
     },
     "required": [
       "record_type",
@@ -114,18 +315,44 @@
       "display": {
         "component": "table",
         "properties": {
-          "rank": { "label": "Rank" },
-          "created_at": { "label": "Created" },
-          "source_post_id": { "label": "Post ID" },
-          "raw_text": { "label": "Text", "format": "text" },
-          "author": { "label": "Author" },
-          "media_preview_count": { "label": "Preview photos" },
-          "media_expanded_count": { "label": "Expanded photos" },
-          "media_plus_n_risk": { "label": "+N risk" },
-          "media_review_severity": { "label": "Media review" },
-          "media_completeness": { "label": "Media status" },
-          "media_deferred_retry": { "label": "Deferred retry" },
-          "source_url": { "label": "Post URL", "format": "link" }
+          "rank": {
+            "label": "Rank"
+          },
+          "created_at": {
+            "label": "Created"
+          },
+          "source_post_id": {
+            "label": "Post ID"
+          },
+          "raw_text": {
+            "label": "Text",
+            "format": "text"
+          },
+          "author": {
+            "label": "Author"
+          },
+          "media_preview_count": {
+            "label": "Preview photos"
+          },
+          "media_expanded_count": {
+            "label": "Expanded photos"
+          },
+          "media_plus_n_risk": {
+            "label": "+N risk"
+          },
+          "media_review_severity": {
+            "label": "Media review"
+          },
+          "media_completeness": {
+            "label": "Media status"
+          },
+          "media_deferred_retry": {
+            "label": "Deferred retry"
+          },
+          "source_url": {
+            "label": "Post URL",
+            "format": "link"
+          }
         }
       }
     }
