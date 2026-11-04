@@ -11,7 +11,7 @@
     "summary": {
       "type": "string",
       "title": "Run summary",
-      "description": "URL of the SUMMARY record with run totals, coverage, stop reason, and the next cursor for older history.",
+      "description": "URL of the SUMMARY record with run totals, coverage, stop reasons, and the next cursor for older history.",
       "template": "{{links.apiDefaultKeyValueStoreUrl}}/records/SUMMARY"
     }
   }
