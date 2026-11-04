@@ -81,3 +81,21 @@ One result equals one Facebook group post. Photo URLs recovered for that post ar
 ## Cost rule
 
 - each post is one billable result; groups x posts-per-group multiplies the bill.
+
+## MCP usage
+
+MCP endpoint: `https://mcp.apify.com?tools=spbotdel/facebook-group-posts-all-photos-scraper`
+
+Minimal `call-actor` input:
+
+```json
+{ "groupUrls": ["https://www.facebook.com/groups/<id>/"], "maxPostsPerGroup": 5, "expandAllPhotos": true }
+```
+
+Recommended `callOptions`:
+
+```json
+{ "memory": 1024, "timeoutSecs": 300, "maxTotalChargeUsd": 0.05 }
+```
+
+After the run, read dataset items with `get-dataset-items` and the `SUMMARY` record with `get-key-value-store-record`. Check `SUMMARY.coverageStatus` before claiming completeness.
