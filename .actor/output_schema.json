@@ -5,11 +5,13 @@
     "results": {
       "type": "string",
       "title": "Dataset items",
+      "description": "URL of the default dataset with one row per collected public group post. Open it to download JSON, CSV, or Excel.",
       "template": "{{links.apiDefaultDatasetUrl}}/items"
     },
     "summary": {
       "type": "string",
       "title": "Run summary",
+      "description": "URL of the SUMMARY record with run totals, coverage, stop reason, and the next cursor for older history.",
       "template": "{{links.apiDefaultKeyValueStoreUrl}}/records/SUMMARY"
     }
   }
