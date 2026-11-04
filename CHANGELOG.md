@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here.
 
+## v0.3.17 - 2026-11-04
+
+### Changed
+
+- All 44 dataset fields now carry agent-facing descriptions in `dataset_schema.json`; runtime code unchanged.
+- Build `0.3.17` smoke run `rVKYiPqOAaxzeKsU4` succeeded with two rows.
+
 ## v0.3.16 - 2026-10-27
 
 ### Fixed
