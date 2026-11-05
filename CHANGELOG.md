@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented here.
 
+## Unreleased - 2026-11-05
+
+### Added
+
+- Importable n8n workflow `docs/n8n/group-to-google-sheets-slack.json` for scheduled Group posts -> Google Sheets + Slack, with a `$0.25` per-run charge cap, `source_post_id` upsert, empty-dataset and missing-key warnings.
+- Setup guide `docs/N8N_GROUP_MONITOR.md` and `test/n8n-template.test.js`.
+
+### Verification
+
+- `npm test` 41/41; `npm run check` passed.
+
 ## v0.3.17 - 2026-11-04
 
 ### Changed

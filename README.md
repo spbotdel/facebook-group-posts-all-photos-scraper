@@ -508,6 +508,7 @@ apify call spbotdel/facebook-group-posts-all-photos-scraper -p '{"groupUrls":["h
 - Use **Apify Schedules** for daily or hourly monitoring.
 - Add a **webhook** on `ACTOR.RUN.SUCCEEDED` to import the dataset into your application.
 - Connect the Actor through Apify integrations in **Make, n8n or Zapier**.
+- Import the ready-made **[Group posts -> Google Sheets + Slack n8n workflow](docs/N8N_GROUP_MONITOR.md)**, including the safe `$0.25` charge cap and `source_post_id` deduplication.
 - Export datasets directly to JSON, CSV or Excel for manual workflows.
 
 ## Reliability and troubleshooting

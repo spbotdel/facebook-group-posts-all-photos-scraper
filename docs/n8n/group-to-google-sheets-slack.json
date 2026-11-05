@@ -1,0 +1,774 @@
+{
+  "name": "Facebook Group Posts -> Google Sheets + Slack",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "id": "group-schedule",
+      "name": "Every 6 hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -760,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "group-url",
+              "name": "groupUrl",
+              "value": "https://www.facebook.com/groups/1564552680458634/",
+              "type": "string"
+            },
+            {
+              "id": "max-posts",
+              "name": "maxPostsPerGroup",
+              "value": 50,
+              "type": "number"
+            },
+            {
+              "id": "max-charge",
+              "name": "maxTotalChargeUsd",
+              "value": 0.25,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "group-config",
+      "name": "Configure safe run",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -540,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.apify.com/v2/acts/spbotdel~facebook-group-posts-all-photos-scraper/runs?maxTotalChargeUsd={{ $json.maxTotalChargeUsd }}",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.APIFY_TOKEN }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ groupUrls: [$json.groupUrl], maxPostsPerGroup: $json.maxPostsPerGroup, sortMode: 'CHRONOLOGICAL', paginationMode: 'cursor_page', expandAllPhotos: true }) }}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "id": "start-group-run",
+      "name": "Start Apify Group run",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -320,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 20,
+        "unit": "seconds"
+      },
+      "id": "wait-for-run",
+      "name": "Wait 20 seconds",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.apify.com/v2/actor-runs/{{ $json.data.id }}",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.APIFY_TOKEN }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-group-run",
+      "name": "Get Apify run",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        120,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "run-finished-condition",
+              "leftValue": "={{ ['SUCCEEDED', 'FAILED', 'ABORTED', 'TIMED_OUT'].includes($json.data.status) || $runIndex >= 40 }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "run-finished",
+      "name": "Run finished?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        340,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "run-succeeded-condition",
+              "leftValue": "={{ $json.data.status }}",
+              "rightValue": "SUCCEEDED",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "run-succeeded",
+      "name": "Succeeded?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.apify.com/v2/datasets/{{ $json.data.defaultDatasetId }}/items?clean=true&format=json&limit=1000",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.APIFY_TOKEN }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-dataset-items",
+      "name": "Get dataset items",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "position": [
+        780,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "has-post-rows",
+              "leftValue": "={{ Object.keys($json || {}).length > 0 }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "has-post-rows",
+      "name": "Has posts?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1000,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "created-at",
+              "name": "created_at",
+              "value": "={{ $json.created_at }}",
+              "type": "string"
+            },
+            {
+              "id": "group-name",
+              "name": "group_name",
+              "value": "={{ $json.group_name || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "author-name",
+              "name": "author_name",
+              "value": "={{ $json.author?.name || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "post-text",
+              "name": "post_text",
+              "value": "={{ $json.raw_text || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "post-url",
+              "name": "post_url",
+              "value": "={{ $json.source_url || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "source-post-id",
+              "name": "source_post_id",
+              "value": "={{ $json.source_post_id || $json.source_url || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "reactions",
+              "name": "reactions",
+              "value": "={{ $json.stats?.likes ?? $json.stats?.reactions ?? 0 }}",
+              "type": "number"
+            },
+            {
+              "id": "comments",
+              "name": "comments",
+              "value": "={{ $json.stats?.comments ?? 0 }}",
+              "type": "number"
+            },
+            {
+              "id": "shares",
+              "name": "shares",
+              "value": "={{ $json.stats?.shares ?? 0 }}",
+              "type": "number"
+            },
+            {
+              "id": "media-final-count",
+              "name": "media_final_count",
+              "value": "={{ $json.media_final_count ?? ($json.media || []).length }}",
+              "type": "number"
+            },
+            {
+              "id": "media-review-severity",
+              "name": "media_review_severity",
+              "value": "={{ $json.media_review_severity || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "coverage-status",
+              "name": "coverage_status",
+              "value": "={{ $json.coverage_status || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "normalize-post",
+      "name": "Normalize post",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1220,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "has-stable-key",
+              "leftValue": "={{ Boolean($json.source_post_id) }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "has-stable-key",
+      "name": "Has stable key?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "sheet",
+        "authentication": "oAuth2",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $env.GROUP_SHEET_ID }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $env.GROUP_SHEET_NAME || 'Posts' }}",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "created_at": "={{ $json.created_at }}",
+            "group_name": "={{ $json.group_name }}",
+            "author_name": "={{ $json.author_name }}",
+            "post_text": "={{ $json.post_text }}",
+            "post_url": "={{ $json.post_url }}",
+            "source_post_id": "={{ $json.source_post_id }}",
+            "reactions": "={{ $json.reactions }}",
+            "comments": "={{ $json.comments }}",
+            "shares": "={{ $json.shares }}",
+            "media_final_count": "={{ $json.media_final_count }}",
+            "media_review_severity": "={{ $json.media_review_severity }}",
+            "coverage_status": "={{ $json.coverage_status }}"
+          },
+          "matchingColumns": [
+            "source_post_id"
+          ]
+        },
+        "options": {}
+      },
+      "id": "append-or-update-sheet",
+      "name": "Append or update Google Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.3,
+      "position": [
+        1660,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all();\nconst run = $('Get Apify run').first().json.data;\nconst link = run.consoleUrl || `https://console.apify.com/view/runs/${run.id}`;\nreturn [{\n  json: {\n    text: `Facebook group run ${run.id} finished: ${rows.length} post(s) written to the Google Sheet.\\nRun: ${link}`\n  }\n}];"
+      },
+      "id": "build-success-message",
+      "name": "Build success message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1880,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "authentication": "none",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.text }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "slack-success",
+      "name": "Slack success",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2100,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const run = $('Get Apify run').first().json.data;\nconst link = run.consoleUrl || `https://console.apify.com/view/runs/${run.id}`;\nreturn [{\n  json: {\n    text: `Facebook group run ${run.id} succeeded with 0 posts. Check SUMMARY before accepting this as an empty group.\\nRun: ${link}`\n  }\n}];"
+      },
+      "id": "build-empty-message",
+      "name": "Build empty message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1220,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "authentication": "none",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.text }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "slack-empty",
+      "name": "Slack empty warning",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const row = $input.first().json;\nconst run = $('Get Apify run').first().json.data;\nconst link = run.consoleUrl || `https://console.apify.com/view/runs/${run.id}`;\nreturn [{\n  json: {\n    text: `Facebook group run ${run.id} found a post without a stable source_post_id or source_url. The row was skipped.\\nPost URL: ${row.post_url || '[missing]'}\\nRun: ${link}`\n  }\n}];"
+      },
+      "id": "build-missing-key-message",
+      "name": "Build missing-key message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1660,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "authentication": "none",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.text }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "slack-missing-key",
+      "name": "Slack missing-key warning",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1880,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const run = $input.first().json.data;\nconst terminal = ['SUCCEEDED', 'FAILED', 'ABORTED', 'TIMED_OUT'].includes(run.status);\nconst link = run.consoleUrl || `https://console.apify.com/view/runs/${run.id}`;\nreturn [{\n  json: {\n    text: `Facebook group run ${run.id} ${terminal ? `ended with status ${run.status}` : 'did not reach a terminal state before the poll limit'}. Check the Apify run before accepting the data.\\nRun: ${link}`\n  }\n}];"
+      },
+      "id": "build-failure-message",
+      "name": "Build failure message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        780,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "authentication": "none",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.text }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "slack-failure",
+      "name": "Slack failure",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1000,
+        120
+      ]
+    }
+  ],
+  "connections": {
+    "Every 6 hours": {
+      "main": [
+        [
+          {
+            "node": "Configure safe run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Configure safe run": {
+      "main": [
+        [
+          {
+            "node": "Start Apify Group run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Apify Group run": {
+      "main": [
+        [
+          {
+            "node": "Wait 20 seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 20 seconds": {
+      "main": [
+        [
+          {
+            "node": "Get Apify run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Apify run": {
+      "main": [
+        [
+          {
+            "node": "Run finished?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run finished?": {
+      "main": [
+        [
+          {
+            "node": "Succeeded?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 20 seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Succeeded?": {
+      "main": [
+        [
+          {
+            "node": "Get dataset items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build failure message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get dataset items": {
+      "main": [
+        [
+          {
+            "node": "Has posts?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has posts?": {
+      "main": [
+        [
+          {
+            "node": "Normalize post",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build empty message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize post": {
+      "main": [
+        [
+          {
+            "node": "Has stable key?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has stable key?": {
+      "main": [
+        [
+          {
+            "node": "Append or update Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build missing-key message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update Google Sheet": {
+      "main": [
+        [
+          {
+            "node": "Build success message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build success message": {
+      "main": [
+        [
+          {
+            "node": "Slack success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build failure message": {
+      "main": [
+        [
+          {
+            "node": "Slack failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build empty message": {
+      "main": [
+        [
+          {
+            "node": "Slack empty warning",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build missing-key message": {
+      "main": [
+        [
+          {
+            "node": "Slack missing-key warning",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
