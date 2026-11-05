@@ -9,6 +9,8 @@ Scrape **latest or historical posts from public Facebook groups** into clean, ag
 
 > **One paid result = one Facebook group post.** Expanded photo URLs are included in the same dataset row and the same per-post price. No Facebook account or cookie input is required from the user.
 
+**Agent Skill:** use the [facebook-intelligence skill](https://github.com/spbotdel/facebook-intelligence-skill) to route requests across all four spbotdel Facebook Actors through Apify MCP.
+
 | Best for | Not designed for |
 | --- | --- |
 | Public Facebook groups, latest-post monitoring, historical backfills, photo-heavy posts, AI agents, MCP, API and scheduled pipelines | Private/login-only groups, Facebook Pages or profiles, Marketplace search, global keyword search, expanded comments, video downloads or transcripts |
