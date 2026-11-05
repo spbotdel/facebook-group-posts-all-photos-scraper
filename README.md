@@ -577,61 +577,55 @@ The pricing card on the [Actor page](https://apify.com/spbotdel/facebook-group-p
 
 ## FAQ
 
-### Do I need a Facebook account or cookies?
+### Do I need a Facebook account or cookies to scrape a group?
 
-No Facebook credentials are requested from the user. The Actor targets content exposed by public Facebook groups. Facebook can still temporarily show a login wall; the Actor reports that condition in `SUMMARY` instead of pretending the group is empty.
+No. The Actor doesn't ask for Facebook credentials or cookies. It reads what public groups show to logged-out visitors. If Facebook shows a login wall, the Actor reports it in `SUMMARY` instead of returning the group as empty.
 
-### Does it work with private groups?
+### Can it scrape private or closed Facebook groups?
 
-No. Private, closed or login-only groups are outside the Actor's scope.
+No. Only public groups are supported. Private, closed and login-only groups are out of scope.
 
-### Does it really return every photo?
+### How much does it cost to scrape Facebook group posts?
 
-It returns every **recoverable public photo URL** and specifically expands hidden `+N` photo sets. Facebook can remove, hide or expire media, so the Actor also returns quality flags rather than making an impossible absolute guarantee.
+FREE and BRONZE cost 0.00249 USD per post, Silver 0.00237 and Gold or higher 0.00224. A run also has a 0.00005 USD start event and a 0.02 USD minimum charge cap. For example, 1,000 posts cost about 2.49 USD plus the start event.
 
-### How can I audit possible missing photos?
+### Why did a group return fewer posts than expected?
 
-Check `media_preview_count`, `media_final_count`, `media_review_severity`, `media_plus_n_risk` and run-level media counts in `SUMMARY`.
+The logged-out feed can stop early, often around 71-79 items. Check `coverage_status` on rows (snake_case) and `coverageStatus` in `SUMMARY`; common values include `blocked_login_wall` and `partial_before_target`.
 
-### Are post timestamps the Facebook creation time or scrape time?
+### How many posts can I get in one run?
 
-`created_at` is the Facebook post creation time when exposed. `created_at_source` records the evidence used. The Actor does not replace a missing creation time with the scrape time.
+You can get up to 1,000 posts per group and up to 10 groups per run (`maxGroupsPerRun`), so one run can return roughly 10,000 posts. Charge or paid-item caps can stop a run earlier with `stopped_charge_limit`. For a single group, continue from `SUMMARY.pointer.nextCursor`; for multi-group runs use `SUMMARY.groups[]` or `outputCheckpoints` and pass `startCursor` / `startCursorsByGroup` into the next run.
 
-### Does it recover text from attached or nested posts?
+### Can I backfill a group's full post history?
 
-Yes, when that text is present in the public payload. `text_source` shows whether text came from the direct message or a nested fallback path.
+You can work backward run by run with cursor continuation. Full history isn't guaranteed because the logged-out feed may stop before the oldest posts. `coverage_status` and `SUMMARY` show where and why a run ended; for multi-group work use the per-group checkpoints, not a single cursor.
 
-### Can it collect 5,000 or more posts?
+### How do I collect only new posts every day?
 
-Yes, through cursor continuation. The current public input limit is 1,000 posts per group per run; save `SUMMARY.pointer.nextCursor` and continue older history in subsequent runs.
+Schedule a newest-first run and set a stop boundary with `knownPostIds`, `onlyPostsNewerThan` or a stored checkpoint. Don't reuse a backfill cursor to look for today's new posts.
 
-### Can it return only new posts every day?
+### Can I scrape posts from a specific date range?
 
-Yes. Schedule a newest-first run and pass `knownPostIds`, `onlyPostsNewerThan` or a stored checkpoint as the stop boundary. Do not use yesterday's backfill cursor to search for today's new posts.
+Yes. `onlyPostsNewerThan` sets the inclusive lower boundary, and `onlyPostsOlderThan` sets the exclusive upper boundary. For predictable traversal, use `CHRONOLOGICAL` with `cursor_page`.
 
-### Can I collect posts from a specific date range?
+### Does it return every photo in a post?
 
-Yes. Set `onlyPostsNewerThan` as the inclusive lower boundary and `onlyPostsOlderThan` as the exclusive upper boundary. Use `CHRONOLOGICAL` with `cursor_page` for predictable traversal.
+It returns every recoverable public photo URL and expands hidden `+N` photo sets. Facebook can hide, remove or expire media, so you can audit results with `media_preview_count`, `media_final_count`, `media_review_severity`, `media_plus_n_risk` and the run-level media counts in `SUMMARY`. The Actor returns image URLs but doesn't download the images into Apify storage.
 
-### Can I search posts by keyword?
+Some identity and engagement fields can be `null` when Facebook doesn't expose them; the Actor never invents IDs, dates, authors or counters.
 
-This Actor collects a public group's feed; it is not Facebook-wide search. Filter `raw_text` downstream, or use a dedicated Facebook search Actor when the source group is unknown.
+### Is created_at the Facebook post date or the scrape time?
 
-### Does it scrape comments?
+`created_at` is Facebook's post creation time when Facebook exposes it. `created_at_source` records the evidence used. A missing creation time is never replaced with the scrape time.
 
-It returns comment counters when Facebook exposes them, not expanded comment bodies or replies.
+### Does it scrape comments or videos?
 
-### What about video?
+It returns comment counters when Facebook exposes them. It doesn't collect comment text or replies. Video downloads, direct video URLs and transcripts aren't part of the product guarantee.
 
-Video downloads, direct video URLs and transcripts are not part of the product guarantee. This Actor is deliberately focused on posts and photos.
+### Can an AI agent run this Actor through MCP?
 
-### Does it download images into Apify storage?
-
-No. It returns image source URLs. Download them in your own pipeline if durable binary storage is needed.
-
-### Can I export to CSV or Excel?
-
-Yes. Use the default dataset's export controls in Apify Console or the dataset API.
+Yes. The agent starts a run with `call-actor`, passes groups and limits as input, and sets run options such as memory, timeout and `maxTotalChargeUsd` in `callOptions` — these are MCP run options, not Actor input fields. It then reads one post per row with `get-dataset-items` and checks `coverage_status` and `SUMMARY` before treating the results as complete.
 
 ## Limitations and responsible use
 
